@@ -1,5 +1,6 @@
 import pandas as pd
-import sys
+import powercampus as pc
+# import sys
 import time
 from datetime import timedelta
 from prefect import task, get_run_logger
@@ -38,4 +39,3 @@ def read_sections_table_task(begin_year: str):
     df = pd.read_csv('data/SECTIONS.csv')
     logger.debug(f"SECTIONS:{df.shape=}")
     return df
-    

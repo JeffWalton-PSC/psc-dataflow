@@ -1,7 +1,7 @@
 import sys
 import time
 from prefect import flow, get_run_logger
-from starfish_task import read_academic_calendar_task, read_sections_table_task, read_people_table_task
+from src.starfish.task import read_academic_calendar_task, read_sections_table_task, read_people_table_task
 
 
 BEGIN_YEAR = "2011"
