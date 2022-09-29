@@ -1,54 +1,43 @@
-import sys
-import time
+import datetime as dt
+import pandas as pd
 from prefect import flow, get_run_logger
-from src.registrar.task import read_academic_calendar_task, read_sections_table_task, read_people_table_task
+from src.powercampus.task import current_yearterm
+from src.powercampus.flow import academic_table, address_table, demographics_table, emailaddress_table, people_table
 
 
 BEGIN_YEAR = "2011"
 
 
 @flow()
-def academic_calendar_flow(begin_year: str):
+def daily_census_file():
+    """
+    Daily Census File subflow.
+    """
     logger = get_run_logger()
-    logger.info(f"academic_calendar_flow({begin_year=})")
-    read_academic_calendar_task(begin_year)
-    time.sleep(0.5)
-    logger.info(f"academic_calendar.txt written.")
+    year, term, start_of_term, end_of_term, yearterm_sort, yearterm =  current_yearterm()
+    logger.debug(f"{year=}, {term=}")
 
-@flow()
-def users_flow(begin_year: str):
-    logger = get_run_logger()
-    logger.info(f"read_people_table_task({begin_year=})")
-    read_people_table_task(begin_year)
-    time.sleep(0.5)
-    logger.info(f"users.txt written.")
+    df_academic = academic_table(year, term)
+    df_people = people_table()
+    df_address = address_table()
+    df_email = emailaddress_table()
+    df_demographics = demographics_table(year, term)
 
-@flow()
-def courses_flow(begin_year: str):
-    logger = get_run_logger()
-    logger.info(f"read_sections_table_task({begin_year=})")
-    read_sections_table_task(begin_year)
-    time.sleep(0.5)
-    read_people_table_task(begin_year)
-    time.sleep(0.5)
-    logger.info(f"courses.txt written.")
+    print(df_academic.head())
+
+
 
 
 @flow()
-def registrar_flow(academic_year: str, academic_term: str):
+def registrar_flow():
+    """
+    Primary flow that runs all Registrar flows.
+    """
     logger = get_run_logger()
-    logger.info(f"starfish_flow({academic_year=}, {academic_term=})")
-    academic_calendar_flow(BEGIN_YEAR)
-    time.sleep(0.5)
-    users_flow(BEGIN_YEAR)
-    time.sleep(0.5)
-    courses_flow(BEGIN_YEAR)
-    logger.info(f"starfish_flow completed.")
+    daily_census_file()
 
 
 
-if __name__ == "__main__":
-    academic_year = sys.argv[1]
-    academic_term = sys.argv[2]
-    registrar_flow(academic_year, academic_term)
+# if __name__ == "__main__":
+#     registrar_flow()
 
