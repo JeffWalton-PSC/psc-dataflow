@@ -2,7 +2,8 @@ import datetime as dt
 import pandas as pd
 from prefect import flow, get_run_logger
 from src.powercampus.task import current_yearterm
-from src.powercampus.flow import academic_table, address_table, demographics_table, emailaddress_table, people_table, residency_table
+from src.powercampus.flow import academic_table, address_table, demographics_table, education_table, \
+    emailaddress_table, organization_table, institution_table, people_table, residency_table
 from src.dataframe.task import filter_rows, keep_columns, merge, rename_columns, write_csv_textfile
 
 
@@ -55,6 +56,10 @@ def daily_census_file():
     df_residency = keep_columns(df_residency, ['people_code_id', 'resident_commuter', 'dorm_building', 'dorm_room', 'mail_slot'])
     df_residency = rename_columns(df_residency, {'mail_slot': 'campus_mailslot'})
     df = merge(df, ['people_code_id'], df_residency, ['people_code_id'])
+
+    df_education = education_table()
+    df_organization = organization_table()
+    df_institution = institution_table()
 
     print(f"{df.shape=}")
     print(df.head())

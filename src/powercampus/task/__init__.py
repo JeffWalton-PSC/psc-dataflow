@@ -332,6 +332,30 @@ table_fields = {
                 ,'EventId'
                 ,'HideOnlineSearch'
             ],
+        'INSTITUTION':
+            [
+                # 'ORG_CODE'
+                # ,'ORG_ID'
+                'ORG_CODE_ID'
+                ,'INSTITUTE_TYPE'
+                # ,'REL_AFFILIATE'
+                # ,'ENROLLMENT'
+                # ,'TUITION_RANGE'
+                # ,'CATALOG_RCVD'
+                # ,'CATALOG_RCVD_DATE'
+                # ,'CREATE_DATE'
+                # ,'CREATE_TIME'
+                # ,'CREATE_OPID'
+                # ,'CREATE_TERMINAL'
+                # ,'REVISION_DATE'
+                # ,'REVISION_TIME'
+                # ,'REVISION_OPID'
+                # ,'REVISION_TERMINAL'
+                # ,'ABT_JOIN'
+                # ,'CONTROL_TYPE'
+                # ,'RESP_COUNSELOR'
+                # ,'TRANSFER_POLICY'
+            ],
         'ORGANIZATION':
             [
                 # 'ORG_CODE'

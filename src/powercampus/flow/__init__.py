@@ -38,12 +38,42 @@ def demographics_table(year: str, term: str):
     return df
 
 @flow(retries=3, retry_delay_seconds=10)
+def education_table():
+    """
+    returns EDUCATION table from PowerCampus
+    """
+    logger = get_run_logger()
+    df = read_table('EDUCATION', )
+    logger.debug(f"{df.shape=}")
+    return df
+
+@flow(retries=3, retry_delay_seconds=10)
 def emailaddress_table():
     """
     returns EmailAddress table from PowerCampus
     """
     logger = get_run_logger()
     df = read_table('EmailAddress', )
+    logger.debug(f"{df.shape=}")
+    return df
+
+@flow(retries=3, retry_delay_seconds=10)
+def institution_table():
+    """
+    returns INSTITUTION table from PowerCampus
+    """
+    logger = get_run_logger()
+    df = read_table('INSTITUTION', )
+    logger.debug(f"{df.shape=}")
+    return df
+
+@flow(retries=3, retry_delay_seconds=10)
+def organization_table():
+    """
+    returns ORGANIZATION table from PowerCampus
+    """
+    logger = get_run_logger()
+    df = read_table('ORGANIZATION', )
     logger.debug(f"{df.shape=}")
     return df
 
@@ -63,7 +93,7 @@ def residency_table(year: str, term: str):
     returns RESIDENCY table for year, term from PowerCampus
     """
     logger = get_run_logger()
-    df = read_table('RESIDENCY', where=f"ACADEMIC_YEAR='{year}' AND ACADEMIC_TERM='{term}'")
+    df = read_table('RESIDENCY', where=f"ACADEMIC_YEAR='{year}' AND ACADEMIC_TERM='{term}' AND ACADEMIC_SESSION=''")
     logger.debug(f"{df.shape=}")
     return df
 
