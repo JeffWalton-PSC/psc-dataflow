@@ -744,7 +744,7 @@ table_fields = {
 
 
 @task(retries=3, retry_delay_seconds=10,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=1),
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=5),
     )
 def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
     logger = get_run_logger()
@@ -762,6 +762,6 @@ def read_table(name:str, where:str="") -> pd.DataFrame:
     logger = get_run_logger()
     logger.debug(f"read_table({name=}, {where=})")
 
-    return pc.select(name, table_fields[name], where, distinct=True)
+    return pc.select(name, table_fields[name], where, distinct=True).rename(columns=str.lower)
 
 
