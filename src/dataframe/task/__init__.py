@@ -3,6 +3,16 @@ from prefect import task, get_run_logger
 
 
 @task
+def deduplicate(df: pd.DataFrame, subset: list[str], keep: str ='first'):
+    """
+    Returns dataframe with rows deduplicated based on the subset of columns.
+    """
+    logger = get_run_logger()
+    logger.debug(f"deduplicate({subset=}, {keep=})")
+    return df.drop_duplicates(subset=subset, keep=keep)
+
+
+@task
 def filter_rows(df: pd.DataFrame, filter: str):
     """
     Returns dataframe with rows that meet the conditions of filter.
