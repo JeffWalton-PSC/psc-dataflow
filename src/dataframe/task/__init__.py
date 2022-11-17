@@ -3,7 +3,7 @@ from prefect import task, get_run_logger
 
 
 @task
-def deduplicate(df: pd.DataFrame, subset: list[str], keep: str ='first'):
+def deduplicate(df: pd.DataFrame, subset: list[str], keep: str ='first') -> pd.DataFrame:
     """
     Returns dataframe with rows deduplicated based on the subset of columns.
     """
@@ -13,7 +13,7 @@ def deduplicate(df: pd.DataFrame, subset: list[str], keep: str ='first'):
 
 
 @task
-def filter_rows(df: pd.DataFrame, filter: str):
+def filter_rows(df: pd.DataFrame, filter: str) -> pd.DataFrame:
     """
     Returns dataframe with rows that meet the conditions of filter.
     Refer to dataframe columns by their column names in the filter string.
@@ -24,7 +24,7 @@ def filter_rows(df: pd.DataFrame, filter: str):
 
 
 @task
-def keep_columns(df: pd.DataFrame, keep_cols: list[str]):
+def keep_columns(df: pd.DataFrame, keep_cols: list[str]) -> pd.DataFrame:
     """
     Returns dataframe with only columns in keep_cols.
     """
@@ -34,7 +34,7 @@ def keep_columns(df: pd.DataFrame, keep_cols: list[str]):
 
 
 @task
-def merge(df1: pd.DataFrame, on1: list[str], df2: pd.DataFrame, on2: list[str], how: str ='left', suffixes: list[str, str] =[None, '_y']):
+def merge(df1: pd.DataFrame, on1: list[str], df2: pd.DataFrame, on2: list[str], how: str ='left', suffixes: list[str, str] =[None, '_y']) -> pd.DataFrame:
     """
     Returns dataframe two dataframes df1 and df2 joined by columns on1 and on2 with a 'how' type of merge.
     See pandas.DataFrame.merge in pandas docs.
@@ -45,7 +45,7 @@ def merge(df1: pd.DataFrame, on1: list[str], df2: pd.DataFrame, on2: list[str], 
 
 
 @task
-def rename_columns(df: pd.DataFrame, name_map: dict[str, str]):
+def rename_columns(df: pd.DataFrame, name_map: dict[str, str]) -> pd.DataFrame:
     """
     Returns dataframe with columns renamed based on the mapping given in name_map.
     """
@@ -55,7 +55,7 @@ def rename_columns(df: pd.DataFrame, name_map: dict[str, str]):
 
 
 @task
-def sort_rows(df: pd.DataFrame, sort_by: list[str], asc: list[bool]):
+def sort_rows(df: pd.DataFrame, sort_by: list[str], asc: list[bool]=[]) -> pd.DataFrame:
     """
     Returns dataframe with rows sorted by the sort_by columns in order defined by asc.
     """
@@ -67,7 +67,7 @@ def sort_rows(df: pd.DataFrame, sort_by: list[str], asc: list[bool]):
 
 
 @task
-def transform(df: pd.DataFrame, transform: dict[str, str]):
+def transform(df: pd.DataFrame, transform: dict[str, str]) -> pd.DataFrame:
     """
     Returns dataframe with new column (transform key) created from expression (transform value).
     Refer to dataframe columns by their column names in the transform value string.
@@ -88,6 +88,7 @@ def write_csv_textfile(df: pd.DataFrame, fn:str, ):
     """
     logger = get_run_logger()
     logger.debug(f"write_csv_textfile({fn=})")
-    return df.to_csv(fn)
+    df.to_csv(fn, index=False)
+    return
 
 

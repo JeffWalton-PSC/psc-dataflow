@@ -97,6 +97,41 @@ table_fields = {
                 # ,'FULL_PART_NON_WITHDRAWN'
                 # ,'FULL_PART_DISP_WITHDRAWN'
             ],
+        'ACADEMICCALENDAR':
+            [
+                'ACADEMIC_YEAR'
+                ,'ACADEMIC_TERM'
+                ,'ACADEMIC_SESSION'
+                ,'START_DATE'
+                ,'END_DATE'
+                ,'FISCAL_YEAR'
+                ,'ACADEMIC_WEEKS'
+                ,'ACADEMIC_MONTHS'
+                ,'NUMBER_COURSES'
+                ,'PRE_REG_DATE'
+                ,'REG_DATE'
+                ,'LAST_REG_DATE'
+                ,'GRADE_WTHDRWL_DATE'
+                ,'GRADE_PENALTY_DATE'
+                # ,'CREATE_DATE'
+                # ,'CREATE_TIME'
+                # ,'CREATE_OPID'
+                # ,'CREATE_TERMINAL'
+                # ,'REVISION_DATE'
+                # ,'REVISION_TIME'
+                # ,'REVISION_OPID'
+                # ,'REVISION_TERMINAL'
+                # ,'ABT_JOIN'
+                ,'TRUE_ACADEMIC_YEAR'
+                ,'FIN_AID_YEAR'
+                ,'FIN_AID_TERM'
+                ,'MID_START_DATE'
+                ,'MID_END_DATE'
+                ,'FINAL_START_DATE'
+                ,'FINAL_END_DATE'
+                # ,'SessionPeriodId'
+                # ,'FinAidNonTerm'
+            ],
         'ADDRESS':
             [
                 # 'PEOPLE_ORG_CODE'
@@ -157,6 +192,43 @@ table_fields = {
                 # ,'REVISION_OPID'
                 # ,'REVISION_TERMINAL'
                 # ,'ABT_JOIN'
+            ],
+        'BUILDING':
+            [
+                # 'ORG_CODE'
+                # ,'ORG_ID'
+                # ,'ORG_CODE_ID'
+                'BUILDING_CODE'
+                ,'BUILD_NAME_1'
+                # ,'BUILD_NAME_2'
+                # ,'OWNER_CODE'
+                # ,'OWNER_ID'
+                # ,'OWNERSHIP_TYPE'
+                # ,'CONSTRUCTED_DATE'
+                # ,'CONSTRUCTION_TYPE'
+                # ,'RENOVATE_DATE'
+                # ,'ZONING'
+                # ,'CONDITION'
+                # ,'POWER'
+                # ,'AIR_CONDITION'
+                # ,'TOTAL_SQ_FT'
+                # ,'USABLE_SQ_FT'
+                # ,'SURROUND_SQ_FT'
+                # ,'NUMBER_FLOORS'
+                # ,'SMOKE_NONSMOKE'
+                # ,'HANDICAP_PARKING'
+                # ,'RAMP_ACCESS'
+                # ,'HANDICAP_RESTROOMS'
+                # ,'CREATE_DATE'
+                # ,'CREATE_TIME'
+                # ,'CREATE_OPID'
+                # ,'CREATE_TERMINAL'
+                # ,'REVISION_DATE'
+                # ,'REVISION_TIME'
+                # ,'REVISION_OPID'
+                # ,'REVISION_TERMINAL'
+                # ,'ABT_JOIN'
+                # ,'BuildingId'
             ],
         'CODE_COUNTY':
             [
@@ -502,7 +574,7 @@ table_fields = {
                 # ,'NONTRAD_PROGRAM'
                 # ,'POPULATION'
                 ,'EVENT_STATUS'
-                # ,'CIP_CODE'
+                ,'CIP_CODE'
                 # ,'SPEEDE_CODE'
                 # ,'SERIAL_ID'
                 # ,'ROOM_TYPE'
@@ -515,7 +587,7 @@ table_fields = {
                 # ,'TRANSCRIPT_PRINT'
                 # ,'MIN_PARTICIPANT'
                 # ,'TARGET_PARTICIPANT'
-                # ,'MAX_PARTICIPANT'
+                ,'MAX_PARTICIPANT'
                 # ,'OTHER_ORG'
                 # ,'OTHER_ORG_PART'
                 # ,'OTHER_PROGRAM'
@@ -568,8 +640,8 @@ table_fields = {
                 # ,'CREATE_TIME'
                 # ,'CREATE_OPID'
                 # ,'CREATE_TERMINAL'
-                # ,'REVISION_DATE'
-                # ,'REVISION_TIME'
+                ,'REVISION_DATE'
+                ,'REVISION_TIME'
                 # ,'REVISION_OPID'
                 # ,'REVISION_TERMINAL'
                 # ,'ABT_JOIN'
@@ -773,7 +845,6 @@ table_fields = {
 def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
     logger = get_run_logger()
     logger.debug(f"current_yearterm()")
-
     df = pc.current_yearterm()
     return (df['year'].iloc[0], df['term'].iloc[0], df['start_of_term'].iloc[0], 
         df['end_of_term'].iloc[0], df['yearterm_sort'].iloc[0], df['yearterm'].iloc[0])
@@ -785,7 +856,7 @@ def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
 def read_table(name:str, where:str="") -> pd.DataFrame:
     logger = get_run_logger()
     logger.debug(f"read_table({name=}, {where=})")
+    return pc.select(name, table_fields[name], where, distinct=True)
 
-    return pc.select(name, table_fields[name], where, distinct=True).rename(columns=str.lower)
 
 
