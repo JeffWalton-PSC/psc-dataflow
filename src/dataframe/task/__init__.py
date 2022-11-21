@@ -87,7 +87,7 @@ def write_csv_textfile(df: pd.DataFrame, fn:str, ):
     See pandas.DataFrame.to_csv in pandas docs.
     """
     logger = get_run_logger()
-    logger.debug(f"write_csv_textfile({fn=})")
+    logger.debug(f"write_csv_textfile({fn=}) {df.shape=}")
     df.to_csv(fn, index=False)
     return
 

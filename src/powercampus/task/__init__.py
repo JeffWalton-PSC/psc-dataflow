@@ -715,10 +715,10 @@ table_fields = {
                 # ,'REVISION_OPID'
                 # ,'REVISION_TERMINAL'
                 # ,'ABT_JOIN'
-                ,'ALPHA_SCORE'
-                ,'ALPHA_SCORE_1'
-                ,'ALPHA_SCORE_2'
-                ,'ALPHA_SCORE_3'
+                # ,'ALPHA_SCORE'
+                # ,'ALPHA_SCORE_1'
+                # ,'ALPHA_SCORE_2'
+                # ,'ALPHA_SCORE_3'
             ],
         'TRANSCRIPTDETAIL':
             [
@@ -732,7 +732,7 @@ table_fields = {
                 ,'EVENT_SUB_TYPE'
                 ,'SECTION'
                 # ,'TRANSCRIPT_SEQ'
-                # ,'ORG_CODE_ID'
+                ,'ORG_CODE_ID'
                 # ,'WEEK_NUMBER'
                 ,'START_DATE'
                 ,'END_DATE'
@@ -784,8 +784,8 @@ table_fields = {
                 # ,'CLASS_LEVEL_CREDITS'
                 # ,'CONTACT_HR_SESSION'
                 # ,'HONORS'
-                # ,'REFERENCE_EVENT_ID'
-                # ,'REFERENCE_SUB_TYPE'
+                ,'REFERENCE_EVENT_ID'
+                ,'REFERENCE_SUB_TYPE'
                 # ,'ATTEND_STATUS'
                 # ,'LAST_ATTEND_DATE'
                 # ,'COMMENT_EXIST'
@@ -853,10 +853,41 @@ def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
 @task(retries=3, retry_delay_seconds=10,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=10),
     )
-def read_table(name:str, where:str="") -> pd.DataFrame:
+def read_table(name:str, where:str="", **kwargs1) -> pd.DataFrame:
     logger = get_run_logger()
-    logger.debug(f"read_table({name=}, {where=})")
-    return pc.select(name, table_fields[name], where, distinct=True)
+    logger.info(f"read_table({name=})")
+    logger.debug(f"read_table({name=}, {table_fields[name]=}, {where=}, {kwargs1=}, {kwargs1.keys()=})")
+    
+    return pc.select(name, table_fields[name], where, distinct=True, **kwargs1)
 
 
+# find the latest year_term
+@task(retries=3, retry_delay_seconds=10,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=10),
+    )
+def latest_year_term(df0):
+    """
+    Return df with most recent records based on ACADEMIC_YEAR and ACADEMIC_TERM
+    """
+    logger = get_run_logger()
+    logger.info(f"latest_year_term({df0.shape=})")
+    df = df0.copy()
+    df = df[(df["ACADEMIC_YEAR"].notnull()) & (df["ACADEMIC_YEAR"].str.isnumeric())]
+    df["ACADEMIC_YEAR"] = pd.to_numeric(df["ACADEMIC_YEAR"], errors="coerce")
+    df_seq = pd.DataFrame(
+        [
+            {"term": "Transfer", "seq": 0},
+            {"term": "SPRING", "seq": 1},
+            {"term": "SUMMER", "seq": 2},
+            {"term": "FALL", "seq": 3},
+        ]
+    )
+    df = pd.merge(df, df_seq, left_on="ACADEMIC_TERM", right_on="term", how="left")
+    df["term_seq"] = df["ACADEMIC_YEAR"] * 100 + df["seq"]
+
+    #d = df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()
+    df = df.loc[df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()]
+    logger.info(f"latest_year_term() = {df.shape=}")
+
+    return df
 

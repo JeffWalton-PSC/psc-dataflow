@@ -165,8 +165,19 @@ def testscores_table() -> pd.DataFrame:
     returns TESTSCORES table for Accuplacer math and English tests from PowerCampus
     """
     logger = get_run_logger()
-    df = read_table('TESTSCORES', where=f"TEST_ID = 'ACC' AND ( TEST_TYPE = 'MATH' OR TEST_TYPE = 'ENGL' ) ")
+    df = read_table('TESTSCORES', where=f"TEST_ID = 'ACC' AND ( TEST_TYPE = 'MATH' OR TEST_TYPE = 'ENGL' ) ", parse_dates=['TEST_DATE'])
     logger.debug(f"testscores_table: {df.shape=}")
+    # logger.debug(f"{df.columns=}")
+    return df
+
+@flow(retries=3, retry_delay_seconds=10)
+def transcriptdetail_table() -> pd.DataFrame:
+    """
+    returns TRANSCRIPTDETAIL table for greater than or equal to begin_year from PowerCampus
+    """
+    logger = get_run_logger()
+    df = read_table('TRANSCRIPTDETAIL', where=f"CREDIT_TYPE = 'TRAN' ")
+    logger.debug(f"transcriptdetail_table: {df.shape=}")
     # logger.debug(f"{df.columns=}")
     return df
 
@@ -176,9 +187,8 @@ def transcriptgpa_table(begin_year: str) -> pd.DataFrame:
     returns TRANSCRIPTGPA table for greater than or equal to begin_year from PowerCampus
     """
     logger = get_run_logger()
-    df = read_table('TRANSCRIPTGPA', where=f"ACADEMIC_YEAR >= '{begin_year}' AND ACADEMIC_TERM IN ('FALL', 'SPRING', 'SUMMER') AND ACADEMIC_SESSION IN ('MAIN', 'CULN', 'EXT', 'FNRR', 'HEOP', 'SLAB', 'BLOCK A', 'BLOCK AB', 'BLOCK B') ")
+    df = read_table('TRANSCRIPTGPA', where=f"ACADEMIC_YEAR >= '{begin_year}' AND ACADEMIC_TERM IN ('FALL', 'SPRING', 'SUMMER') ")
     logger.debug(f"transcriptgpa_table: {df.shape=}")
     # logger.debug(f"{df.columns=}")
     return df
-
 
