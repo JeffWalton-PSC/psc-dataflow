@@ -5,7 +5,7 @@ from src.dataframe.task import write_csv_textfile
 
 
 
-@task()
+@flow()
 def combine_exporter_files():
     """
     Combines daily difference files from Starfish Exporter into one file.
@@ -26,7 +26,7 @@ def combine_exporter_files():
 
     for ft in file_types:
         files = exporter_path.glob(ft + '*.csv')
-        combined_df = pd.concat( [ pd.read_csv(f) for f in files ] )
+        combined_df = pd.concat( [ pd.read_csv(f, low_memory=False) for f in files ] )
         combined_df = combined_df.drop_duplicates()
         outfile = output_path / (ft + '.csv')
         write_csv_textfile( combined_df, outfile)

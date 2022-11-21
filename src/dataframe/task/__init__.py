@@ -81,14 +81,14 @@ def transform(df: pd.DataFrame, transform: dict[str, str]) -> pd.DataFrame:
 
 
 @task
-def write_csv_textfile(df: pd.DataFrame, fn:str, ):
+def write_csv_textfile(df: pd.DataFrame, fn:str, **kwargs):
     """
     Writes dataframe to a csv text file with name fn.
     See pandas.DataFrame.to_csv in pandas docs.
     """
     logger = get_run_logger()
-    logger.debug(f"write_csv_textfile({fn=}) {df.shape=}")
-    df.to_csv(fn, index=False)
+    logger.debug(f"write_csv_textfile({fn=}, {kwargs=}) {df.shape=}")
+    df.to_csv(fn, index=False, **kwargs)
     return
 
 

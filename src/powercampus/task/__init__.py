@@ -1,8 +1,11 @@
+import datetime as dt
 import pandas as pd
 import powercampus as pc
 from datetime import timedelta
 from prefect import task, get_run_logger
 from prefect.tasks import task_input_hash
+from src.powercampus import TASK_RDS, TASK_CEM
+from src.starfish import N_YEARS_ACTIVE_WINDOW
 
 
 table_fields = {
@@ -839,8 +842,80 @@ table_fields = {
     }
 
 
-@task(retries=3, retry_delay_seconds=10,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=5),
+# create active student list from 2-year rolling window
+@task(retries=3, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def active_students() -> pd.DataFrame:
+    """
+    returns DataFrame of active student IDs
+
+    Active Students are those that have been enrolled in last two years.
+    """
+
+    today = dt.date.today()
+    n_years_ago = today.year - N_YEARS_ACTIVE_WINDOW
+    df = (
+        pc.select(
+        'ACADEMIC', 
+        ['PEOPLE_CODE_ID'], 
+        where=f"ACADEMIC_YEAR > '{n_years_ago}' AND PRIMARY_FLAG = 'Y' AND CURRICULUM NOT IN ('ADVST') AND GRADUATED NOT IN ('G') ", 
+        distinct=True 
+        )
+    )
+    return df
+
+
+# create user list of PEOPLE_CODE_ID's with college email_addresses
+@task(retries=3, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def with_email_address() -> pd.DataFrame:
+    """
+    returns DataFrame of PEOPLE_CODE_ID's with non-NULL college email_addresses
+    """
+
+    df = (
+        pc.select(
+        'EmailAddress',
+        ['PeopleOrgCodeId'],
+        where="IsActive = 1 AND (EmailType='HOME' OR EmailType='MLBX') AND Email LIKE '%@%' ",
+        distinct=True 
+        ).rename(columns={"PeopleOrgCodeId": "PEOPLE_CODE_ID"})
+    )
+    return df
+
+
+@task(retries=3, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def apply_active(in_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    returns copy of in_df with only records for active students
+
+    in_df is an input DataFrame, must have PEOPLE_CODE_ID field
+    """
+
+    # return records for active students
+    return pd.merge(in_df, active_students(), how="inner", on="PEOPLE_CODE_ID")
+
+
+@task(retries=3, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def apply_active_with_email_address(in_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    returns copy of in_df with only records for active students with email_address
+
+    in_df is an input DataFrame, must have PEOPLE_CODE_ID field
+    """
+
+    # return records for active students with email_address
+    return pd.merge(apply_active(in_df=in_df), with_email_address(), how="inner", on="PEOPLE_CODE_ID")
+
+
+@task(retries=3, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, ccache_expiration=timedelta(minutes=5),
     )
 def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
     logger = get_run_logger()
@@ -850,22 +925,11 @@ def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
         df['end_of_term'].iloc[0], df['yearterm_sort'].iloc[0], df['yearterm'].iloc[0])
 
 
-@task(retries=3, retry_delay_seconds=10,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=10),
-    )
-def read_table(name:str, where:str="", **kwargs1) -> pd.DataFrame:
-    logger = get_run_logger()
-    logger.info(f"read_table({name=})")
-    logger.debug(f"read_table({name=}, {table_fields[name]=}, {where=}, {kwargs1=}, {kwargs1.keys()=})")
-    
-    return pc.select(name, table_fields[name], where, distinct=True, **kwargs1)
-
-
 # find the latest year_term
-@task(retries=3, retry_delay_seconds=10,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=10),
+@task(retries=3, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
-def latest_year_term(df0):
+def latest_year_term(df0: pd.DataFrame) -> pd.DataFrame:
     """
     Return df with most recent records based on ACADEMIC_YEAR and ACADEMIC_TERM
     """
@@ -890,4 +954,16 @@ def latest_year_term(df0):
     logger.info(f"latest_year_term() = {df.shape=}")
 
     return df
+
+
+@task(retries=3, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def read_table(name:str, where:str="", **kwargs1) -> pd.DataFrame:
+    logger = get_run_logger()
+    logger.info(f"read_table({name=})")
+    logger.debug(f"read_table({name=}, {table_fields[name]=}, {where=}, {kwargs1=}, {kwargs1.keys()=})")
+    
+    return pc.select(name, table_fields[name], where, distinct=True, **kwargs1)
+
 

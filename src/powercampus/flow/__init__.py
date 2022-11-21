@@ -4,10 +4,11 @@ import pandas as pd
 # import time
 # from datetime import timedelta
 from prefect import flow, get_run_logger
+from src.powercampus import FLOW_RDS
 from src.powercampus.task import read_table
 
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def academic_table(year: str, term: str) -> pd.DataFrame:
     """
     returns ACADEMIC table for year, term from PowerCampus
@@ -17,7 +18,7 @@ def academic_table(year: str, term: str) -> pd.DataFrame:
     logger.debug(f"academic_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def academiccalendar_table(year: str) -> pd.DataFrame:
     """
     returns ACADEMICCALENDAR table starting with year from PowerCampus
@@ -27,7 +28,7 @@ def academiccalendar_table(year: str) -> pd.DataFrame:
     logger.debug(f"academiccalendar_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def address_table() -> pd.DataFrame:
     """
     returns ADDRESS table from PowerCampus
@@ -37,7 +38,7 @@ def address_table() -> pd.DataFrame:
     logger.debug(f"address_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def building_table() -> pd.DataFrame:
     """
     returns BUILDING table from PowerCampus
@@ -47,7 +48,7 @@ def building_table() -> pd.DataFrame:
     logger.debug(f"building_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def code_day_table() -> pd.DataFrame:
     """
     returns CODE_DAY table from PowerCampus
@@ -57,7 +58,7 @@ def code_day_table() -> pd.DataFrame:
     logger.debug(f"code_day_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def demographics_table(year: str, term: str) -> pd.DataFrame:
     """
     returns DEMOGRAPHICS table for year, term from PowerCampus
@@ -67,7 +68,7 @@ def demographics_table(year: str, term: str) -> pd.DataFrame:
     logger.debug(f"demographics_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def education_table() -> pd.DataFrame:
     """
     returns EDUCATION table from PowerCampus
@@ -77,7 +78,7 @@ def education_table() -> pd.DataFrame:
     logger.debug(f"education_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def emailaddress_table() -> pd.DataFrame:
     """
     returns EmailAddress table from PowerCampus
@@ -87,7 +88,7 @@ def emailaddress_table() -> pd.DataFrame:
     logger.debug(f"emailaddress_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def institution_table() -> pd.DataFrame:
     """
     returns INSTITUTION table from PowerCampus
@@ -97,7 +98,7 @@ def institution_table() -> pd.DataFrame:
     logger.debug(f"institution_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def organization_table() -> pd.DataFrame:
     """
     returns ORGANIZATION table from PowerCampus
@@ -107,7 +108,7 @@ def organization_table() -> pd.DataFrame:
     logger.debug(f"organization_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def people_table() -> pd.DataFrame:
     """
     returns PEOPLE table from PowerCampus
@@ -117,7 +118,7 @@ def people_table() -> pd.DataFrame:
     logger.debug(f"people_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def residency_table(year: str, term: str) -> pd.DataFrame:
     """
     returns RESIDENCY table for year, term from PowerCampus
@@ -127,7 +128,7 @@ def residency_table(year: str, term: str) -> pd.DataFrame:
     logger.debug(f"residency_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def sectionper_table(begin_year: str) -> pd.DataFrame:
     """
     returns SECTIONPER table for greater than or equal to begin_year from PowerCampus
@@ -137,7 +138,7 @@ def sectionper_table(begin_year: str) -> pd.DataFrame:
     logger.debug(f"sectionper_table: {df.shape=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def sections_table(begin_year: str) -> pd.DataFrame:
     """
     returns SECTIONS table for greater than or equal to begin_year from PowerCampus
@@ -148,7 +149,7 @@ def sections_table(begin_year: str) -> pd.DataFrame:
     # logger.debug(f"{df.columns=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def sectionschedule_table(begin_year: str) -> pd.DataFrame:
     """
     returns SECTIONSCHEDULE table for greater than or equal to begin_year from PowerCampus
@@ -159,7 +160,7 @@ def sectionschedule_table(begin_year: str) -> pd.DataFrame:
     # logger.debug(f"{df.columns=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def testscores_table() -> pd.DataFrame:
     """
     returns TESTSCORES table for Accuplacer math and English tests from PowerCampus
@@ -170,7 +171,7 @@ def testscores_table() -> pd.DataFrame:
     # logger.debug(f"{df.columns=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def transcriptdetail_table() -> pd.DataFrame:
     """
     returns TRANSCRIPTDETAIL table for greater than or equal to begin_year from PowerCampus
@@ -181,7 +182,7 @@ def transcriptdetail_table() -> pd.DataFrame:
     # logger.debug(f"{df.columns=}")
     return df
 
-@flow(retries=3, retry_delay_seconds=10)
+@flow(retries=3, retry_delay_seconds=FLOW_RDS)
 def transcriptgpa_table(begin_year: str) -> pd.DataFrame:
     """
     returns TRANSCRIPTGPA table for greater than or equal to begin_year from PowerCampus

@@ -5,6 +5,7 @@ from pathlib import WindowsPath, Path
 
 BEGIN_YEAR = "2011"
 CATALOG_YEAR = "2022"
+N_YEARS_ACTIVE_WINDOW = 8
 
 starfish_files_path = WindowsPath(r"F:\Applications\Starfish\Files")
 starfish_workingfiles_path = starfish_files_path / "workingfiles"

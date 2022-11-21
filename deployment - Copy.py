@@ -5,7 +5,7 @@ from src.starfish.exporter import exporter_flow
 from src.starfish.flow import starfish_flow
 from prefect.deployments import Deployment
 from prefect.orion.schemas.schedules import RRuleSchedule
-# from prefect.filesystems import LocalFileSystem
+from prefect.filesystems import LocalFileSystem
 # from prefect.infrastructure import Process
 
 
