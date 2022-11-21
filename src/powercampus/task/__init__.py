@@ -4,7 +4,7 @@ import powercampus as pc
 from datetime import timedelta
 from prefect import task, get_run_logger
 from prefect.tasks import task_input_hash
-from src.powercampus import TASK_RDS, TASK_CEM
+from src.powercampus import TASK_CEM, TASK_RETRIES, TASK_RDS
 from src.starfish import N_YEARS_ACTIVE_WINDOW
 
 
@@ -843,7 +843,7 @@ table_fields = {
 
 
 # create active student list from 2-year rolling window
-@task(retries=3, retry_delay_seconds=TASK_RDS,
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
 def active_students() -> pd.DataFrame:
@@ -867,7 +867,7 @@ def active_students() -> pd.DataFrame:
 
 
 # create user list of PEOPLE_CODE_ID's with college email_addresses
-@task(retries=3, retry_delay_seconds=TASK_RDS,
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
 def with_email_address() -> pd.DataFrame:
@@ -886,7 +886,7 @@ def with_email_address() -> pd.DataFrame:
     return df
 
 
-@task(retries=3, retry_delay_seconds=TASK_RDS,
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
 def apply_active(in_df: pd.DataFrame) -> pd.DataFrame:
@@ -900,7 +900,7 @@ def apply_active(in_df: pd.DataFrame) -> pd.DataFrame:
     return pd.merge(in_df, active_students(), how="inner", on="PEOPLE_CODE_ID")
 
 
-@task(retries=3, retry_delay_seconds=TASK_RDS,
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
 def apply_active_with_email_address(in_df: pd.DataFrame) -> pd.DataFrame:
@@ -914,7 +914,7 @@ def apply_active_with_email_address(in_df: pd.DataFrame) -> pd.DataFrame:
     return pd.merge(apply_active(in_df=in_df), with_email_address(), how="inner", on="PEOPLE_CODE_ID")
 
 
-@task(retries=3, retry_delay_seconds=TASK_RDS,
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, ccache_expiration=timedelta(minutes=5),
     )
 def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
@@ -926,7 +926,7 @@ def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
 
 
 # find the latest year_term
-@task(retries=3, retry_delay_seconds=TASK_RDS,
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
 def latest_year_term(df0: pd.DataFrame) -> pd.DataFrame:
@@ -956,7 +956,7 @@ def latest_year_term(df0: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-@task(retries=3, retry_delay_seconds=TASK_RDS,
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
 def read_table(name:str, where:str="", **kwargs1) -> pd.DataFrame:
