@@ -1,6 +1,5 @@
 import datetime as dt
 import pandas as pd
-# import powercampus as pc
 from datetime import timedelta
 from prefect import task, get_run_logger
 from prefect.tasks import task_input_hash
@@ -949,9 +948,6 @@ def apply_active_with_email_address(n_years_active_window: int, in_df: pd.DataFr
     return pd.merge(apply_active(n_years_active_window, in_df=in_df), with_email_address(), how="inner", on="PEOPLE_CODE_ID")
 
 
-
-
-
 # find the latest year_term
 @task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
@@ -978,6 +974,7 @@ def latest_year_term(df0: pd.DataFrame) -> pd.DataFrame:
 
     #d = df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()
     df = df.loc[df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()]
+    logger.info(f"{df=}")
     logger.info(f"latest_year_term() = {df.shape=}")
 
     return df
@@ -1021,7 +1018,7 @@ def current_yearterm_df() -> pd.DataFrame:
 
     logger = get_run_logger()
     logger.debug(f"current_yearterm_df()")
-    
+
     df_cal = ( select("ACADEMICCALENDAR", 
                     fields=['ACADEMIC_YEAR', 'ACADEMIC_TERM', 'ACADEMIC_SESSION', 
                             'START_DATE', 'END_DATE', 'FINAL_END_DATE'

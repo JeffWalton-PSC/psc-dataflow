@@ -48,11 +48,7 @@ def higherthan20gpa_student_prereq_groups(begin_year: str):
     df = deduplicate(df, subset=["student_integration_id", "prereq_group_identifier"], keep="last")
 
     write_csv_textfile(df, fn_output)
-    logger.info(f"{fn_output} written.")
 
-    # copy files to Starfish sisdatafiles directory
-    # copy_to_starfish_sisdatafiles(fn_output)
-    
     logger.info(f"End: higherthan20gpa_student_prereq_groups()")
 
 
@@ -68,9 +64,6 @@ def classlevel_student_prereq_groups(begin_year: str):
 
     output_path = starfish_workingfiles_path / "student_prereq_groups"
     fn_output = output_path / "class-level_student_prereq_groups.txt"
-
-    # year, term, _, _, _, _ =  current_yearterm()
-    # logger.debug(f"current: {year=}, {term=}")
 
     df_aca = academic_table(begin_year)
     df_aca = filter_rows(df_aca, filter="ACADEMIC_SESSION == '' & PRIMARY_FLAG == 'Y' & CREDITS > 0 ")
@@ -109,14 +102,11 @@ def classlevel_student_prereq_groups(begin_year: str):
     write_csv_textfile(df, fn_output)
     logger.info(f"{fn_output} written.")
 
-    # copy files to Starfish sisdatafiles directory
-    # copy_to_starfish_sisdatafiles(fn_output)
-    
     logger.info(f"End: classlevel_student_prereq_groups()")
 
 
 @flow()
-def gened_student_prereq_groups(begin_year: str):
+def gened_student_prereq_groups(begin_year: str, catalog_year: str):
     """
     Data file for Starfish's DegreePlanner.
     Creates pre-requisite groups based on geneds (SC-I, WC-F, etc.).
@@ -126,8 +116,6 @@ def gened_student_prereq_groups(begin_year: str):
 
     output_path = starfish_workingfiles_path / "student_prereq_groups"
     fn_output = output_path / "gened_student_prereq_groups.txt"
-
-    year, term, _, _, _, _ =  current_yearterm()
 
     #create a passing grades dataframe
     passing_grades = ['A','A+','B','B+','C','C+','D','D+','P','TR']
@@ -144,7 +132,7 @@ def gened_student_prereq_groups(begin_year: str):
     outcomes_fn = starfish_prod_sisdatafiles_path / "course_outcomes.txt"
     outcomes_df = pd.read_csv(outcomes_fn)
 
-    req_course_sets_fn = starfish_prod_sisdatafiles_path / f"{year}_requirement_course_sets.txt"
+    req_course_sets_fn = starfish_prod_sisdatafiles_path / f"{catalog_year}_requirement_course_sets.txt"
     req_course_sets_df = pd.read_csv(req_course_sets_fn)
 
     outcomes_section_pd = pd.merge(outcomes_df, sections_df, left_on='course_section_integration_id', right_on='course_section_id', how='left')
@@ -193,11 +181,16 @@ def gened_student_prereq_groups(begin_year: str):
     result_pd_399 = outcomes_sections_sets_pd_399.query("final_grade in @passing_grades").query("set_abbreviation in @gen_ed_codes")
 
     #append the 399 and standard data frames
-    result_pd = pd.concat([result_pd, result_pd_399], ignore_index=True,sort=True)
+    result_pd = pd.concat([result_pd, result_pd_399], ignore_index=True, sort=True)
 
     #remove the grade and ID column
     result_pd = result_pd[['user_integration_id','set_abbreviation']]
-    result_pd = result_pd.rename(columns={"user_integration_id": "student_integration_id","set_abbreviation": "prereq_group_identifier"})
+    result_pd = result_pd.rename(
+        columns={
+            "user_integration_id": "student_integration_id",
+            "set_abbreviation": "prereq_group_identifier"
+            }
+        )
 
     #incorporate test scores for math scores over 199 to have met qp-f
     #student_integration_id,test_id,numeric_score,date_taken
@@ -219,9 +212,6 @@ def gened_student_prereq_groups(begin_year: str):
 
     write_csv_textfile(result_pd, fn_output)
 
-    # copy files to Starfish sisdatafiles directory
-    # copy_to_starfish_sisdatafiles(fn_output)
-    
     logger.info(f"End: gened_student_prereq_groups()")
 
 
@@ -694,29 +684,13 @@ def starfish_flow(academic_year: str, academic_term: str):
     logger = get_run_logger()
     logger.info(f"Start: starfish_flow({academic_year=}, {academic_term=})")
 
+    requirement_course_sets(CATALOG_YEAR)
+    teaching(BEGIN_YEAR)
+    student_prereq_groups(BEGIN_YEAR)
+    section_schedules(BEGIN_YEAR)
+    student_test_results()
+    student_transfer_records()
 
-    # import powercampus as pc
-    # logger.info(f"TESTSCORES pc.select()")
-    # df = pc.select('TESTSCORES', ['PEOPLE_CODE_ID', 'TEST_ID', 'TEST_TYPE', 'CONVERTED_SCORE', 'TEST_DATE' ], f"TEST_ID = 'ACC' AND ( TEST_TYPE = 'MATH' OR TEST_TYPE = 'ENGL' ) ", distinct=True, parse_dates=['TEST_DATE'])
-    # logger.info(f"TESTSCORES pc.select() {df.info()=}")
-
-    # from src.powercampus.task import read_table
-    # logger.info(f"TESTSCORES read_table()")
-    # df = read_table('TESTSCORES', where=f"TEST_ID = 'ACC' AND ( TEST_TYPE = 'MATH' OR TEST_TYPE = 'ENGL' ) ", parse_dates=['TEST_DATE']) 
-    # logger.info(f"TESTSCORES read_table() {df.info()=}")
-
-
-    # requirement_course_sets(CATALOG_YEAR)
-    # teaching(BEGIN_YEAR)
-
-    higherthan20gpa_student_prereq_groups(BEGIN_YEAR)
-    classlevel_student_prereq_groups(BEGIN_YEAR)
-    gened_student_prereq_groups(BEGIN_YEAR)
-
-    # student_prereq_groups(BEGIN_YEAR)
-    # section_schedules(BEGIN_YEAR)
-    # student_test_results()
-    # student_transfer_records()
     logger.info(f"End: starfish_flow()")
 
 

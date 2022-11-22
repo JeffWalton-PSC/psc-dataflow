@@ -1,8 +1,4 @@
 import pandas as pd
-# import powercampus as pc
-# import sys
-# import time
-# from datetime import timedelta
 from prefect import flow, get_run_logger
 from src.powercampus import FLOW_RDS, FLOW_RETRIES
 from src.powercampus.task import read_table
