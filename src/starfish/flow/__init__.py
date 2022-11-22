@@ -216,7 +216,7 @@ def gened_student_prereq_groups(begin_year: str, catalog_year: str):
 
 
 @flow()
-def student_prereq_groups(begin_year: str):
+def student_prereq_groups(begin_year: str, catalog_year: str):
     """
     Data file for Starfish's DegreePlanner.
     Creates pre-requisite groups based on geneds (SC-I, WC-F, etc.).
@@ -228,7 +228,7 @@ def student_prereq_groups(begin_year: str):
 
     higherthan20gpa_student_prereq_groups(begin_year)
     classlevel_student_prereq_groups(begin_year)
-    gened_student_prereq_groups(begin_year)
+    gened_student_prereq_groups(begin_year, catalog_year)
 
     prereq_files_path = starfish_workingfiles_path / "student_prereq_groups"
     prereq_fn_output = prereq_files_path / "student_prereq_groups.txt"
@@ -270,9 +270,10 @@ def student_test_results():
     df = testscores_table()
 
     df = df[df["TEST_DATE"].notnull()]
-    df.loc[df["TEST_TYPE"] == "MATH", "test_id"] = "ACCUPLACER_MATH"
-    df.loc[df["TEST_TYPE"] == "ENGL", "test_id"] = "ACCUPLACER_ENGLISH"
-    df["numeric_score"] = df["CONVERTED_SCORE"].dropna().apply(np.int64)
+    df.loc[df["TEST_TYPE"]=="MATH", "test_id"] = "ACCUPLACER_MATH"
+    df.loc[df["TEST_TYPE"]=="ENGL", "test_id"] = "ACCUPLACER_ENGLISH"
+    df = df.loc[(df["CONVERTED_SCORE"].notna()),:]
+    df["numeric_score"] = df["CONVERTED_SCORE"].apply(np.int64)
     df["date_taken"] = df["TEST_DATE"].dt.strftime("%Y-%m-%d")
 
     # keep records for active students with email_address
@@ -686,10 +687,10 @@ def starfish_flow(academic_year: str, academic_term: str):
 
     requirement_course_sets(CATALOG_YEAR)
     teaching(BEGIN_YEAR)
-    student_prereq_groups(BEGIN_YEAR)
-    section_schedules(BEGIN_YEAR)
     student_test_results()
     student_transfer_records()
+    section_schedules(BEGIN_YEAR)
+    student_prereq_groups(BEGIN_YEAR, CATALOG_YEAR)
 
     logger.info(f"End: starfish_flow()")
 

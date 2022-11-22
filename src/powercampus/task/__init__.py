@@ -974,7 +974,6 @@ def latest_year_term(df0: pd.DataFrame) -> pd.DataFrame:
 
     #d = df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()
     df = df.loc[df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()]
-    logger.info(f"{df=}")
     logger.info(f"latest_year_term() = {df.shape=}")
 
     return df
