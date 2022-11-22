@@ -9,12 +9,12 @@ from src.powercampus.task import read_table
 
 
 @flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
-def academic_table(year: str, term: str) -> pd.DataFrame:
+def academic_table(begin_year: str) -> pd.DataFrame:
     """
     returns ACADEMIC table for year, term from PowerCampus
     """
     logger = get_run_logger()
-    df = read_table('ACADEMIC', where=f"ACADEMIC_YEAR='{year}' AND ACADEMIC_TERM='{term}'")
+    df = read_table('ACADEMIC', where=f"ACADEMIC_YEAR>='{begin_year}' ")
     logger.debug(f"academic_table: {df.shape=}")
     return df
 
@@ -192,4 +192,5 @@ def transcriptgpa_table(begin_year: str) -> pd.DataFrame:
     logger.debug(f"transcriptgpa_table: {df.shape=}")
     # logger.debug(f"{df.columns=}")
     return df
+
 

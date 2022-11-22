@@ -22,8 +22,8 @@ def daily_census_file():
     year, term, start_of_term, end_of_term, yearterm_sort, yearterm =  current_yearterm()
     logger.debug(f"{year=}, {term=}")
 
-    df_academic = academic_table(year, term).rename(columns=str.lower)
-    df_academic = filter_rows(df_academic, "(primary_flag=='Y') & (academic_session=='') & (curriculum!='ADVST') & (credits>0)")
+    df_academic = academic_table(BEGIN_YEAR).rename(columns=str.lower)
+    df_academic = filter_rows(df_academic, f"(academic_year=='{year}') & (academic_term=='{term}') & (primary_flag=='Y') & (academic_session=='') & (curriculum!='ADVST') & (credits>0)")
 
     df_people = people_table().rename(columns=str.lower)
 

@@ -843,9 +843,6 @@ table_fields = {
 
 
 # create active student list from 2-year rolling window
-@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
-    )
 def active_students() -> pd.DataFrame:
     """
     returns DataFrame of active student IDs
@@ -867,9 +864,6 @@ def active_students() -> pd.DataFrame:
 
 
 # create user list of PEOPLE_CODE_ID's with college email_addresses
-@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
-    )
 def with_email_address() -> pd.DataFrame:
     """
     returns DataFrame of PEOPLE_CODE_ID's with non-NULL college email_addresses
@@ -886,9 +880,6 @@ def with_email_address() -> pd.DataFrame:
     return df
 
 
-@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
-    )
 def apply_active(in_df: pd.DataFrame) -> pd.DataFrame:
     """
     returns copy of in_df with only records for active students
@@ -914,8 +905,11 @@ def apply_active_with_email_address(in_df: pd.DataFrame) -> pd.DataFrame:
     return pd.merge(apply_active(in_df=in_df), with_email_address(), how="inner", on="PEOPLE_CODE_ID")
 
 
+
+
+
 @task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
-    cache_key_fn=task_input_hash, ccache_expiration=timedelta(minutes=5),
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=5),
     )
 def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
     logger = get_run_logger()

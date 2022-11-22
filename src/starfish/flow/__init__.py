@@ -8,8 +8,8 @@ import sys
 from prefect import flow, get_run_logger
 
 from src.dataframe.task import deduplicate, filter_rows, keep_columns, rename_columns, sort_rows, write_csv_textfile
-from src.powercampus.flow import academic_table, building_table, code_day_table, sectionper_table, \
-    sections_table, sectionschedule_table, testscores_table, transcriptdetail_table, transcriptgpa_table
+from src.powercampus.flow import academic_table, building_table, code_day_table, sectionper_table, sections_table, \
+    sectionschedule_table, testscores_table, transcriptdetail_table, transcriptgpa_table
 from src.powercampus.task import apply_active_with_email_address, current_yearterm, latest_year_term
 from src.starfish import BEGIN_YEAR, CATALOG_YEAR, starfish_workingfiles_path, starfish_prod_sisdatafiles_path
 from src.starfish.task import copy_to_starfish_sisdatafiles
@@ -73,10 +73,10 @@ def classlevel_student_prereq_groups(begin_year: str):
     output_path = starfish_workingfiles_path / "student_prereq_groups"
     fn_output = output_path / "class-level_student_prereq_groups.txt"
 
-    year, term, _, _, _, _ =  current_yearterm()
-    logger.debug(f"current: {year=}, {term=}")
+    # year, term, _, _, _, _ =  current_yearterm()
+    # logger.debug(f"current: {year=}, {term=}")
 
-    df_aca = academic_table(year, term)
+    df_aca = academic_table(begin_year)
     df_aca = filter_rows(df_aca, filter="ACADEMIC_SESSION == '' & PRIMARY_FLAG == 'Y' & CREDITS > 0 ")
     df_aca = keep_columns(df_aca, keep_cols=[
         "PEOPLE_CODE_ID",
@@ -94,7 +94,7 @@ def classlevel_student_prereq_groups(begin_year: str):
     df_tgpa = filter_rows(df_tgpa, filter="(RECORD_TYPE == 'O') & (TOTAL_CREDITS >= 0) ")
     df_tgpa = latest_year_term(df_tgpa)
 
-    df = pd.merge(df_aca, df_tgpa, on=["PEOPLE_CODE_ID"], how="left")
+    df = pd.merge(df_aca, df_tgpa, on=["PEOPLE_CODE_ID", 'ACADEMIC_YEAR', 'ACADEMIC_TERM'], how="left")
 
     # keep records for active students with email_address
     df = apply_active_with_email_address(in_df=df)
