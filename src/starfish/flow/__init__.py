@@ -1,19 +1,15 @@
 import datetime as dt
 import numpy as np
 import pandas as pd
-# import shutil
 import sys
-# import time
-# from pathlib import WindowsPath
 from prefect import flow, get_run_logger
 
 from src.dataframe.task import deduplicate, filter_rows, keep_columns, rename_columns, sort_rows, write_csv_textfile
 from src.powercampus.flow import academic_table, building_table, code_day_table, sectionper_table, sections_table, \
     sectionschedule_table, testscores_table, transcriptdetail_table, transcriptgpa_table
 from src.powercampus.task import apply_active_with_email_address, current_yearterm, latest_year_term
-from src.starfish import BEGIN_YEAR, CATALOG_YEAR, starfish_workingfiles_path, starfish_prod_sisdatafiles_path
+from src.starfish import BEGIN_YEAR, CATALOG_YEAR, N_YEARS_ACTIVE_WINDOW, starfish_workingfiles_path, starfish_prod_sisdatafiles_path
 from src.starfish.task import copy_to_starfish_sisdatafiles
-
 
 
 @flow()
@@ -32,7 +28,7 @@ def higherthan20gpa_student_prereq_groups(begin_year: str):
     df = filter_rows(df, filter="(RECORD_TYPE == 'O') & (TOTAL_CREDITS >= 0) ")
 
     # keep records for active students with email_address
-    df = apply_active_with_email_address(in_df=df)
+    df = apply_active_with_email_address(N_YEARS_ACTIVE_WINDOW, in_df=df)
 
     # filter results to only have cumulative GPA's equal to or above a 2.0,
     #                   and Fall, Spring or Summer term
@@ -94,11 +90,11 @@ def classlevel_student_prereq_groups(begin_year: str):
     df_tgpa = filter_rows(df_tgpa, filter="(RECORD_TYPE == 'O') & (TOTAL_CREDITS >= 0) ")
     df_tgpa = latest_year_term(df_tgpa)
 
-    df = pd.merge(df_aca, df_tgpa, on=["PEOPLE_CODE_ID", 'ACADEMIC_YEAR', 'ACADEMIC_TERM'], how="left")
+    df = pd.merge(df_aca, df_tgpa, on=["PEOPLE_CODE_ID"], how="left")
 
     # keep records for active students with email_address
-    df = apply_active_with_email_address(in_df=df)
-
+    df = apply_active_with_email_address(N_YEARS_ACTIVE_WINDOW, in_df=df)
+    
     df.loc[:, "prereq_group_identifier"] = "FRESHMAN"
     df.loc[(df["TOTAL_CREDITS"] >= 30), "prereq_group_identifier"] = "SOPHOMORE"
     df.loc[(df["TOTAL_CREDITS"] >= 60), "prereq_group_identifier"] = "JUNIOR"
@@ -290,7 +286,7 @@ def student_test_results():
     df["date_taken"] = df["TEST_DATE"].dt.strftime("%Y-%m-%d")
 
     # keep records for active students with email_address
-    df = apply_active_with_email_address(in_df=df)
+    df = apply_active_with_email_address(N_YEARS_ACTIVE_WINDOW, in_df=df)
 
     df = rename_columns(df, name_map={"PEOPLE_CODE_ID": "student_integration_id"})
     df = keep_columns(df, keep_cols=["student_integration_id", "test_id", "numeric_score", "date_taken"])
@@ -324,7 +320,7 @@ def student_transfer_records():
     df = transcriptdetail_table()
 
     # keep records for active students with email_address
-    df = apply_active_with_email_address(in_df=df)
+    df = apply_active_with_email_address(N_YEARS_ACTIVE_WINDOW, in_df=df)
 
     crs_id = (
         lambda c: (str(c["EVENT_ID"]).replace(" ", "") + str(c["EVENT_SUB_TYPE"]).upper())

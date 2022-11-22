@@ -2,6 +2,9 @@
 parameters used by PowerCampus flows and tasks
 """
 
+# earliest PowerCampus ACADEMIC_YEAR
+START_ACADEMIC_YEAR = '2004'
+
 # flow retry_delay_seconds
 FLOW_RDS = 10
 

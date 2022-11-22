@@ -1,7 +1,7 @@
 """
 parameters used by Starfish flows and tasks
 """
-from pathlib import WindowsPath, Path
+from pathlib import WindowsPath
 
 BEGIN_YEAR = "2011"
 CATALOG_YEAR = "2022"
