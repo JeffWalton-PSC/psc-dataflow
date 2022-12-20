@@ -19,8 +19,8 @@ def canvas_data_download():
     logger.info(f"canvas_data_download()")
 
     data_path = canvas_path / "data"
-    downloads_path = canvas_path / "downloads"
-    processed_path = canvas_path / "processed_data"
+    downloads_path = data_path / "downloads"
+    processed_path = data_path / "processed_data"
 
     logger.info(f"Start: Canvas Data - All tables")
 
@@ -237,7 +237,7 @@ def canvas_hourly_flow():
     logger.info(f"Start: canvas_hourly_flow()")
 
     logger.info(f"  NO FLOWS DEFINED")
-    df = pd.read_csv("F:\Data\exporter_data\attendance.csv")
+    df = pd.read_csv(r"F:\Data\exporter_data\attendance.csv")
     logger.debug(f"{df.shape=}")
     
     logger.info(f"End: canvas_hourly_flow()")
