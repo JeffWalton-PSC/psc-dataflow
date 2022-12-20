@@ -94,6 +94,8 @@ starfish_deployment = Deployment.build_from_flow(
 
 
 if __name__ == "__main__":
+    canvas_data_deployment.apply()
+    canvas_hourly_deployment.apply()
     exporter_deployment.apply()
     registrar_deployment.apply()    
     starfish_deployment.apply()
