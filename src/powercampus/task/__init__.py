@@ -1,8 +1,10 @@
+import datetime as dt
 import pandas as pd
-import powercampus as pc
 from datetime import timedelta
 from prefect import task, get_run_logger
 from prefect.tasks import task_input_hash
+from src.powercampus import START_ACADEMIC_YEAR, TASK_CEM, TASK_RETRIES, TASK_RDS
+import local_db
 
 
 table_fields = {
@@ -97,6 +99,41 @@ table_fields = {
                 # ,'FULL_PART_NON_WITHDRAWN'
                 # ,'FULL_PART_DISP_WITHDRAWN'
             ],
+        'ACADEMICCALENDAR':
+            [
+                'ACADEMIC_YEAR'
+                ,'ACADEMIC_TERM'
+                ,'ACADEMIC_SESSION'
+                ,'START_DATE'
+                ,'END_DATE'
+                ,'FISCAL_YEAR'
+                ,'ACADEMIC_WEEKS'
+                ,'ACADEMIC_MONTHS'
+                ,'NUMBER_COURSES'
+                ,'PRE_REG_DATE'
+                ,'REG_DATE'
+                ,'LAST_REG_DATE'
+                ,'GRADE_WTHDRWL_DATE'
+                ,'GRADE_PENALTY_DATE'
+                # ,'CREATE_DATE'
+                # ,'CREATE_TIME'
+                # ,'CREATE_OPID'
+                # ,'CREATE_TERMINAL'
+                # ,'REVISION_DATE'
+                # ,'REVISION_TIME'
+                # ,'REVISION_OPID'
+                # ,'REVISION_TERMINAL'
+                # ,'ABT_JOIN'
+                ,'TRUE_ACADEMIC_YEAR'
+                ,'FIN_AID_YEAR'
+                ,'FIN_AID_TERM'
+                ,'MID_START_DATE'
+                ,'MID_END_DATE'
+                ,'FINAL_START_DATE'
+                ,'FINAL_END_DATE'
+                # ,'SessionPeriodId'
+                # ,'FinAidNonTerm'
+            ],
         'ADDRESS':
             [
                 # 'PEOPLE_ORG_CODE'
@@ -157,6 +194,43 @@ table_fields = {
                 # ,'REVISION_OPID'
                 # ,'REVISION_TERMINAL'
                 # ,'ABT_JOIN'
+            ],
+        'BUILDING':
+            [
+                # 'ORG_CODE'
+                # ,'ORG_ID'
+                # ,'ORG_CODE_ID'
+                'BUILDING_CODE'
+                ,'BUILD_NAME_1'
+                # ,'BUILD_NAME_2'
+                # ,'OWNER_CODE'
+                # ,'OWNER_ID'
+                # ,'OWNERSHIP_TYPE'
+                # ,'CONSTRUCTED_DATE'
+                # ,'CONSTRUCTION_TYPE'
+                # ,'RENOVATE_DATE'
+                # ,'ZONING'
+                # ,'CONDITION'
+                # ,'POWER'
+                # ,'AIR_CONDITION'
+                # ,'TOTAL_SQ_FT'
+                # ,'USABLE_SQ_FT'
+                # ,'SURROUND_SQ_FT'
+                # ,'NUMBER_FLOORS'
+                # ,'SMOKE_NONSMOKE'
+                # ,'HANDICAP_PARKING'
+                # ,'RAMP_ACCESS'
+                # ,'HANDICAP_RESTROOMS'
+                # ,'CREATE_DATE'
+                # ,'CREATE_TIME'
+                # ,'CREATE_OPID'
+                # ,'CREATE_TERMINAL'
+                # ,'REVISION_DATE'
+                # ,'REVISION_TIME'
+                # ,'REVISION_OPID'
+                # ,'REVISION_TERMINAL'
+                # ,'ABT_JOIN'
+                # ,'BuildingId'
             ],
         'CODE_COUNTY':
             [
@@ -502,7 +576,7 @@ table_fields = {
                 # ,'NONTRAD_PROGRAM'
                 # ,'POPULATION'
                 ,'EVENT_STATUS'
-                # ,'CIP_CODE'
+                ,'CIP_CODE'
                 # ,'SPEEDE_CODE'
                 # ,'SERIAL_ID'
                 # ,'ROOM_TYPE'
@@ -515,7 +589,7 @@ table_fields = {
                 # ,'TRANSCRIPT_PRINT'
                 # ,'MIN_PARTICIPANT'
                 # ,'TARGET_PARTICIPANT'
-                # ,'MAX_PARTICIPANT'
+                ,'MAX_PARTICIPANT'
                 # ,'OTHER_ORG'
                 # ,'OTHER_ORG_PART'
                 # ,'OTHER_PROGRAM'
@@ -568,8 +642,8 @@ table_fields = {
                 # ,'CREATE_TIME'
                 # ,'CREATE_OPID'
                 # ,'CREATE_TERMINAL'
-                # ,'REVISION_DATE'
-                # ,'REVISION_TIME'
+                ,'REVISION_DATE'
+                ,'REVISION_TIME'
                 # ,'REVISION_OPID'
                 # ,'REVISION_TERMINAL'
                 # ,'ABT_JOIN'
@@ -643,10 +717,10 @@ table_fields = {
                 # ,'REVISION_OPID'
                 # ,'REVISION_TERMINAL'
                 # ,'ABT_JOIN'
-                ,'ALPHA_SCORE'
-                ,'ALPHA_SCORE_1'
-                ,'ALPHA_SCORE_2'
-                ,'ALPHA_SCORE_3'
+                # ,'ALPHA_SCORE'
+                # ,'ALPHA_SCORE_1'
+                # ,'ALPHA_SCORE_2'
+                # ,'ALPHA_SCORE_3'
             ],
         'TRANSCRIPTDETAIL':
             [
@@ -660,7 +734,7 @@ table_fields = {
                 ,'EVENT_SUB_TYPE'
                 ,'SECTION'
                 # ,'TRANSCRIPT_SEQ'
-                # ,'ORG_CODE_ID'
+                ,'ORG_CODE_ID'
                 # ,'WEEK_NUMBER'
                 ,'START_DATE'
                 ,'END_DATE'
@@ -712,8 +786,8 @@ table_fields = {
                 # ,'CLASS_LEVEL_CREDITS'
                 # ,'CONTACT_HR_SESSION'
                 # ,'HONORS'
-                # ,'REFERENCE_EVENT_ID'
-                # ,'REFERENCE_SUB_TYPE'
+                ,'REFERENCE_EVENT_ID'
+                ,'REFERENCE_SUB_TYPE'
                 # ,'ATTEND_STATUS'
                 # ,'LAST_ATTEND_DATE'
                 # ,'COMMENT_EXIST'
@@ -767,25 +841,265 @@ table_fields = {
     }
 
 
-@task(retries=3, retry_delay_seconds=10,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=5),
-    )
-def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
-    logger = get_run_logger()
-    logger.debug(f"current_yearterm()")
+def select(table:str, fields:list=None, where:str="", distinct=False, **kwargs) -> pd.DataFrame:
+    """
+    Function pulls data from PowerCampus database.
 
-    df = pc.current_yearterm()
+    Returns a pandas DataFrame.
+
+    Example Usage:
+    select("ACADEMIC", 
+          fields=['PEOPLE_CODE_ID', 'ACADEMIC_YEAR', 'ACADEMIC_TERM'], 
+          where="ACADEMIC_YEAR='2021' and ACADEMIC_TERM='FALL' and CREDITS>0", 
+          distinct=True)
+
+    """
+    
+    connection = local_db.connection()
+
+    if fields is None:
+        fields = "*"
+    else:
+        fields = ", ".join(fields)
+
+    if where != "":
+        where = "WHERE " + where
+
+    if distinct:
+        distinct = "DISTINCT "
+    else:
+        distinct = ""
+    
+    parsedates = None
+    if kwargs:
+        if 'parse_dates' in kwargs.keys():
+            parsedates = kwargs['parse_dates']
+
+    sql_str = (
+        f"SELECT {distinct}{fields} "
+        + f"FROM {table} "
+        + where
+    )
+    # print(sql_str)
+    return ( pd.read_sql_query(sql_str, connection, parse_dates=parsedates)
+    )
+
+
+# create active student list from 2-year rolling window
+def active_students(n_years_active_window: int) -> pd.DataFrame:
+    """
+    returns DataFrame of active student IDs
+
+    Active Students are those that have been enrolled in last two years.
+    """
+
+    today = dt.date.today()
+    n_years_ago = today.year - n_years_active_window
+    df = (
+        select(
+        'ACADEMIC', 
+        ['PEOPLE_CODE_ID'], 
+        where=f"ACADEMIC_YEAR > '{n_years_ago}' AND PRIMARY_FLAG = 'Y' AND CURRICULUM NOT IN ('ADVST') AND GRADUATED NOT IN ('G') ", 
+        distinct=True 
+        )
+    )
+    return df
+
+
+# create user list of PEOPLE_CODE_ID's with college email_addresses
+def with_email_address() -> pd.DataFrame:
+    """
+    returns DataFrame of PEOPLE_CODE_ID's with non-NULL college email_addresses
+    """
+
+    df = (
+        select(
+        'EmailAddress',
+        ['PeopleOrgCodeId'],
+        where="IsActive = 1 AND (EmailType='HOME' OR EmailType='MLBX') AND Email LIKE '%@%' ",
+        distinct=True 
+        ).rename(columns={"PeopleOrgCodeId": "PEOPLE_CODE_ID"})
+    )
+    return df
+
+
+def apply_active(n_years_active_window: int, in_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    returns copy of in_df with only records for active students
+
+    in_df is an input DataFrame, must have PEOPLE_CODE_ID field
+    """
+
+    # return records for active students
+    return pd.merge(in_df, active_students(n_years_active_window), how="inner", on="PEOPLE_CODE_ID")
+
+
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def apply_active_with_email_address(n_years_active_window: int, in_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    returns copy of in_df with only records for active students with email_address
+
+    in_df is an input DataFrame, must have PEOPLE_CODE_ID field
+    """
+
+    # return records for active students with email_address
+    return pd.merge(apply_active(n_years_active_window, in_df=in_df), with_email_address(), how="inner", on="PEOPLE_CODE_ID")
+
+
+# find the latest year_term
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def latest_year_term(df0: pd.DataFrame) -> pd.DataFrame:
+    """
+    Return df with most recent records based on ACADEMIC_YEAR and ACADEMIC_TERM
+    """
+    logger = get_run_logger()
+    logger.info(f"latest_year_term({df0.shape=})")
+    df = df0.copy()
+    df = df[(df["ACADEMIC_YEAR"].notnull()) & (df["ACADEMIC_YEAR"].str.isnumeric())]
+    df["ACADEMIC_YEAR"] = pd.to_numeric(df["ACADEMIC_YEAR"], errors="coerce")
+    df_seq = pd.DataFrame(
+        [
+            {"term": "Transfer", "seq": 0},
+            {"term": "SPRING", "seq": 1},
+            {"term": "SUMMER", "seq": 2},
+            {"term": "FALL", "seq": 3},
+        ]
+    )
+    df = pd.merge(df, df_seq, left_on="ACADEMIC_TERM", right_on="term", how="left")
+    df["term_seq"] = df["ACADEMIC_YEAR"] * 100 + df["seq"]
+
+    #d = df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()
+    df = df.loc[df.reset_index().groupby(["PEOPLE_CODE_ID"])["term_seq"].idxmax()]
+    logger.info(f"latest_year_term() = {df.shape=}")
+
+    return df
+
+
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def read_table(name:str, where:str="", **kwargs1) -> pd.DataFrame:
+    logger = get_run_logger()
+    logger.info(f"read_table({name=})")
+    logger.debug(f"read_table({name=}, {table_fields[name]=}, {where=}, {kwargs1=}, {kwargs1.keys()=})")
+    
+    return select(name, table_fields[name], where, distinct=True, **kwargs1)
+
+
+# @task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
+#     cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=5),
+#     )
+def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
+    df = current_yearterm_df()
     return (df['year'].iloc[0], df['term'].iloc[0], df['start_of_term'].iloc[0], 
         df['end_of_term'].iloc[0], df['yearterm_sort'].iloc[0], df['yearterm'].iloc[0])
 
 
-@task(retries=3, retry_delay_seconds=10,
-    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=10),
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
     )
-def read_table(name:str, where:str="") -> pd.DataFrame:
+def current_yearterm_df() -> pd.DataFrame:
+    """
+    Function returns current year/term information based on today's date.
+
+    Returns dataframe containing:
+        term - string,
+        year - string,
+        yearterm - string,
+        start_of_term - datetime,
+        end_of_term - datetime,
+        yearterm_sort - string
+    """
+
     logger = get_run_logger()
-    logger.debug(f"read_table({name=}, {where=})")
+    logger.debug(f"current_yearterm_df()")
 
-    return pc.select(name, table_fields[name], where, distinct=True).rename(columns=str.lower)
+    df_cal = ( select("ACADEMICCALENDAR", 
+                    fields=['ACADEMIC_YEAR', 'ACADEMIC_TERM', 'ACADEMIC_SESSION', 
+                            'START_DATE', 'END_DATE', 'FINAL_END_DATE'
+                            ], 
+                    where=f"ACADEMIC_YEAR>='{START_ACADEMIC_YEAR}' AND ACADEMIC_TERM IN ('FALL', 'SPRING', 'SUMMER')", 
+                    distinct=True
+                    )
+              .groupby(['ACADEMIC_YEAR', 'ACADEMIC_TERM']).agg(
+                  {'START_DATE': ['min'],
+                   'END_DATE': ['max'],
+                   'FINAL_END_DATE': ['max']
+                  }
+              ).reset_index()
+             )
+    df_cal.columns = df_cal.columns.droplevel(1)
+    
+    yearterm_sort = ( lambda r:
+        r['ACADEMIC_YEAR'] + '01' if r['ACADEMIC_TERM']=='SPRING' else
+        (r['ACADEMIC_YEAR'] + '02' if r['ACADEMIC_TERM']=='SUMMER' else
+        (r['ACADEMIC_YEAR'] + '03' if r['ACADEMIC_TERM']=='FALL' else
+        r['ACADEMIC_YEAR'] + '00'))
+    )
+    df_cal['yearterm_sort'] = df_cal.apply(yearterm_sort, axis=1)
+
+    df_cal['yearterm'] = df_cal['ACADEMIC_YEAR'] + '.' +  df_cal['ACADEMIC_TERM'].str.title()
+
+    df_cal = ( 
+        df_cal.drop(
+            columns=[
+                'END_DATE'
+                ]
+            )
+        .rename(
+            columns={
+                'ACADEMIC_YEAR': 'year', 
+                'ACADEMIC_TERM': 'term', 
+                'START_DATE': 'start_of_term', 
+                'FINAL_END_DATE': 'end_of_term', 
+                }
+            )
+        )
+
+    return df_cal.loc[(df_cal['end_of_term'] >= dt.datetime.today())].sort_values(['end_of_term']).iloc[[0]]
 
 
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def add_col_yearterm(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds 'yearterm' column to dataframe df.
+    """
+    
+    if ('ACADEMIC_YEAR' in df.columns) and ('ACADEMIC_TERM' in df.columns):
+        df['yearterm'] = df['ACADEMIC_YEAR'] + '.' +  df['ACADEMIC_TERM'].str.title()
+    else:
+        # print("ERROR: columns not found ['ACADEMIC_YEAR', 'ACADEMIC_TERM']")
+        raise KeyError("columns not found ['ACADEMIC_YEAR', 'ACADEMIC_TERM']")
+    
+    return df
+
+
+@task(retries=TASK_RETRIES, retry_delay_seconds=TASK_RDS,
+    cache_key_fn=task_input_hash, cache_expiration=timedelta(minutes=TASK_CEM),
+    )
+def add_col_yearterm_sort(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds 'yearterm_sort' column to dataframe df.
+    """
+    
+    yearterm_sort = ( lambda r:
+        r['ACADEMIC_YEAR'] + '01' if r['ACADEMIC_TERM']=='SPRING' else
+        (r['ACADEMIC_YEAR'] + '02' if r['ACADEMIC_TERM']=='SUMMER' else
+        (r['ACADEMIC_YEAR'] + '03' if r['ACADEMIC_TERM']=='FALL' else
+        r['ACADEMIC_YEAR'] + '00'))
+    )
+    
+    if ('ACADEMIC_YEAR' in df.columns) and ('ACADEMIC_TERM' in df.columns):
+        df['yearterm_sort'] = df.apply(yearterm_sort, axis=1)
+
+    else:
+        # print("ERROR: columns not found ['ACADEMIC_YEAR', 'ACADEMIC_TERM']")
+        raise KeyError("columns not found ['ACADEMIC_YEAR', 'ACADEMIC_TERM']")
+    
+    return df
