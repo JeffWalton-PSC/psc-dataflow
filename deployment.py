@@ -6,25 +6,25 @@ from src.starfish.exporter import exporter_flow
 from src.starfish.flow import starfish_flow
 from prefect.deployments import Deployment
 from prefect.orion.schemas.schedules import RRuleSchedule
-# from prefect.filesystems import LocalFileSystem
-# from prefect.infrastructure import Process
+from prefect.filesystems import LocalFileSystem
+from prefect.infrastructure import Process
 
 
-# local_storage = LocalFileSystem(
-#     basepath="F:\Applications\psc-dataflow\data\storage"
-#     )
-# local_storage.save(
-#     "psc-dataflow-local-storage-block", 
-# #     overwrite=True
-#     )
-
-# process_infrastructure = Process(
-#     working_dir="F:\Applications\psc-dataflow\data\work"
-#     )
-# process_infrastructure.save(
-#     "psc-dataflow-process-infrastructure", 
+local_storage = LocalFileSystem(
+    basepath="F:\Applications\psc-dataflow\data\storage"
+    )
+local_storage.save(
+    "psc-dataflow-local-storage-block", 
 #     overwrite=True
-#     )
+    )
+
+process_infrastructure = Process(
+    working_dir="F:\Applications\psc-dataflow\data\work"
+    )
+process_infrastructure.save(
+    "psc-dataflow-process-infrastructure", 
+#     overwrite=True
+    )
 
 canvas_data_deployment = Deployment.build_from_flow(
     flow=canvas_data_flow,
@@ -34,7 +34,7 @@ canvas_data_deployment = Deployment.build_from_flow(
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
     work_queue_name="production",
-    # storage=local_storage,
+    storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20221220T041500\nFREQ=HOURLY;INTERVAL=8", timezone="America/New_York")
         ),
 )
@@ -47,7 +47,7 @@ canvas_hourly_deployment = Deployment.build_from_flow(
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
     work_queue_name="production",
-    # storage=local_storage,
+    storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20221220T043000\nFREQ=HOURLY;INTERVAL=1", timezone="America/New_York")
         ),
 )
@@ -60,7 +60,7 @@ exporter_deployment = Deployment.build_from_flow(
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
     work_queue_name="production",
-    # storage=local_storage,
+    storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20221120T041500\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
         ),
 )
@@ -73,7 +73,7 @@ registrar_deployment = Deployment.build_from_flow(
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
     work_queue_name="production",
-    # storage=local_storage,
+    storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20221109T170000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
         ),
 )
@@ -81,13 +81,13 @@ registrar_deployment = Deployment.build_from_flow(
 starfish_deployment = Deployment.build_from_flow(
     flow=starfish_flow,
     name="starfish-deployment",
-    parameters={"academic_year": "2022",
-                "academic_term": "FALL"},
+    parameters={"academic_year": "2023",
+                "academic_term": "SPRING"},
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
     work_queue_name="production",
-    # storage=local_storage,
+    storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20221109T193000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
         ),
 )

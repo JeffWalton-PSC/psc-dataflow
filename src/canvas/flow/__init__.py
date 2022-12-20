@@ -230,13 +230,15 @@ def canvas_data_flow():
 @flow()
 def canvas_hourly_flow():
     """
-    Main Canvas flow.  Runs all Canvas data feed flows houtly.
+    Main Canvas flow.  Runs all Canvas data feed flows hourly.
     """
 
     logger = get_run_logger()
     logger.info(f"Start: canvas_hourly_flow()")
 
     logger.info(f"  NO FLOWS DEFINED")
+    df = pd.read_csv("F:\Data\exporter_data\attendance.csv")
+    logger.debug(f"{df.shape=}")
     
     logger.info(f"End: canvas_hourly_flow()")
 
