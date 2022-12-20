@@ -30,6 +30,7 @@ canvas_data_deployment = Deployment.build_from_flow(
     flow=canvas_data_flow,
     name="canvas-data-deployment",
     parameters={},
+    infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
@@ -43,6 +44,7 @@ canvas_hourly_deployment = Deployment.build_from_flow(
     flow=canvas_hourly_flow,
     name="canvas-hourly-deployment",
     parameters={},
+    infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
@@ -56,6 +58,7 @@ exporter_deployment = Deployment.build_from_flow(
     flow=exporter_flow,
     name="exporter-deployment",
     parameters={},
+    infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
@@ -69,6 +72,7 @@ registrar_deployment = Deployment.build_from_flow(
     flow=registrar_flow,
     name="registrar-deployment",
     parameters={},
+    infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
@@ -83,6 +87,7 @@ starfish_deployment = Deployment.build_from_flow(
     name="starfish-deployment",
     parameters={"academic_year": "2023",
                 "academic_term": "SPRING"},
+    infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
