@@ -206,6 +206,9 @@ def canvas_last_student_activity():
     output_fn = output_path / f"{term}{year}_canvas_activity_{today}.csv"
     gb.to_csv(output_fn)
     logger.debug(f"Canvas - Student Last Activity written to: {output_fn}")
+    output_fn2 = output_path / f"canvas_activity.csv"
+    gb.to_csv(output_fn2)
+    logger.debug(f"Canvas - Student Last Activity written to: {output_fn}")
 
     logger.info(f"End: Canvas - Student Last Activity")
 
