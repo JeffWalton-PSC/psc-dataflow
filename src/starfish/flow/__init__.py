@@ -303,10 +303,10 @@ def student_transfer_records():
     """
 
     logger = get_run_logger()
-    logger.info(f"student_transfer_record()")
+    logger.info(f"student_transfer_records()")
 
     output_path = starfish_workingfiles_path / "student_transfer_records"
-    fn_output = output_path / "student_transfer_record.txt"
+    fn_output = output_path / "student_transfer_records.txt"
 
     df = transcriptdetail_table()
 
@@ -373,7 +373,7 @@ def student_transfer_records():
     # copy files to Starfish sisdatafiles directory
     copy_to_starfish_sisdatafiles(fn_output)
     
-    logger.info(f"End: student_transfer_record()")
+    logger.info(f"End: student_transfer_records()")
 
 
 @flow()
