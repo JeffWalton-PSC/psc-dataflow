@@ -4,7 +4,7 @@ parameters used by Starfish flows and tasks
 from pathlib import WindowsPath
 
 BEGIN_YEAR = "2011"
-CATALOG_YEAR = "2022"
+CATALOG_YEAR = "2023"
 N_YEARS_ACTIVE_WINDOW = 8
 
 starfish_files_path = WindowsPath(r"F:\Applications\Starfish\Files")
