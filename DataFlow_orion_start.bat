@@ -1,5 +1,6 @@
 @echo on
 echo "***** batch file running" >> F:\Applications\psc-dataflow\logs\orion_out.log
+date /T >> F:\Applications\psc-dataflow\logs\orion_out.log
 time /T >> F:\Applications\psc-dataflow\logs\orion_out.log
 
 whoami 1>> F:\Applications\psc-dataflow\logs\orion_out.log 2>&1
