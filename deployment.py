@@ -5,7 +5,7 @@ from src.registrar.flow import registrar_flow
 from src.starfish.exporter import exporter_flow
 from src.starfish.flow import starfish_flow
 from prefect.deployments import Deployment
-from prefect.orion.schemas.schedules import RRuleSchedule
+from prefect.client.schemas.schedules import RRuleSchedule
 from prefect.filesystems import LocalFileSystem
 from prefect.infrastructure import Process
 
@@ -90,7 +90,7 @@ registrar_deployment = Deployment.build_from_flow(
 starfish_deployment = Deployment.build_from_flow(
     flow=starfish_flow,
     name="starfish-deployment",
-    parameters={"academic_year": "2023",
+    parameters={"academic_year": "2024",
                 "academic_term": "SPRING"},
     infrastructure=process_infrastructure,
     infra_overrides={
