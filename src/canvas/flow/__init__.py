@@ -3,7 +3,7 @@ import datetime as dt
 import pandas as pd
 from prefect import flow, get_run_logger
 
-from src.powercampus.task import current_yearterm
+from src.powercampus.flow import current_yearterm
 from src.canvas import canvas_path
 
 from canvas_data.api import CanvasDataAPI

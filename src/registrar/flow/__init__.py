@@ -2,9 +2,8 @@ import datetime as dt
 import pandas as pd
 from pathlib import WindowsPath
 from prefect import flow, get_run_logger
-from src.powercampus.task import current_yearterm
-from src.powercampus.flow import academic_table, academiccalendar_table, address_table, demographics_table, education_table, \
-    emailaddress_table, organization_table, institution_table, people_table, residency_table
+from src.powercampus.flow import academic_table, academiccalendar_table, address_table, current_yearterm, demographics_table,\
+     education_table, emailaddress_table, organization_table, institution_table, people_table, residency_table
 from src.dataframe.task import deduplicate, filter_rows, keep_columns, merge, rename_columns, sort_rows, write_csv_textfile
 
 

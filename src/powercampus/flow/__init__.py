@@ -1,7 +1,8 @@
+import datetime as dt
 import pandas as pd
 from prefect import flow, get_run_logger
-from src.powercampus import FLOW_RDS, FLOW_RETRIES
-from src.powercampus.task import read_table
+from src.powercampus import FLOW_RDS, FLOW_RETRIES, table_fields
+from src.powercampus.task import select, current_yearterm_df
 
 
 @flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
@@ -189,4 +190,83 @@ def transcriptgpa_table(begin_year: str) -> pd.DataFrame:
     # logger.debug(f"{df.columns=}")
     return df
 
+
+# create active student list from 2-year rolling window
+@flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
+def active_students(n_years_active_window: int) -> pd.DataFrame:
+    """
+    returns DataFrame of active student IDs
+
+    Active Students are those that have been enrolled in last two years.
+    """
+
+    today = dt.date.today()
+    n_years_ago = today.year - n_years_active_window
+    df = (
+        select(
+        'ACADEMIC', 
+        ['PEOPLE_CODE_ID'], 
+        where=f"ACADEMIC_YEAR > '{n_years_ago}' AND PRIMARY_FLAG = 'Y' AND CURRICULUM NOT IN ('ADVST') AND GRADUATED NOT IN ('G') ", 
+        distinct=True 
+        )
+    )
+    return df
+
+
+# create user list of PEOPLE_CODE_ID's with college email_addresses
+@flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
+def with_email_address() -> pd.DataFrame:
+    """
+    returns DataFrame of PEOPLE_CODE_ID's with non-NULL college email_addresses
+    """
+
+    df = (
+        select(
+        'EmailAddress',
+        ['PeopleOrgCodeId'],
+        where="IsActive = 1 AND (EmailType='HOME' OR EmailType='MLBX') AND Email LIKE '%@%' ",
+        distinct=True 
+        ).rename(columns={"PeopleOrgCodeId": "PEOPLE_CODE_ID"})
+    )
+    return df
+
+
+@flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
+def apply_active(n_years_active_window: int, in_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    returns copy of in_df with only records for active students
+
+    in_df is an input DataFrame, must have PEOPLE_CODE_ID field
+    """
+
+    # return records for active students
+    return pd.merge(in_df, active_students(n_years_active_window), how="inner", on="PEOPLE_CODE_ID")
+
+
+@flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
+def apply_active_with_email_address(n_years_active_window: int, in_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    returns copy of in_df with only records for active students with email_address
+
+    in_df is an input DataFrame, must have PEOPLE_CODE_ID field
+    """
+
+    # return records for active students with email_address
+    return pd.merge(apply_active(n_years_active_window, in_df=in_df), with_email_address(), how="inner", on="PEOPLE_CODE_ID")
+
+
+@flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
+def read_table(name:str, where:str="", **kwargs1) -> pd.DataFrame:
+    logger = get_run_logger()
+    logger.info(f"read_table({name=})")
+    logger.debug(f"read_table({name=}, {table_fields[name]=}, {where=}, {kwargs1=}, {kwargs1.keys()=})")
+    
+    return select(name, table_fields[name], where, distinct=True, **kwargs1)
+
+
+@flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
+def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
+    df = current_yearterm_df()
+    return (df['year'].iloc[0], df['term'].iloc[0], df['start_of_term'].iloc[0], 
+        df['end_of_term'].iloc[0], df['yearterm_sort'].iloc[0], df['yearterm'].iloc[0])
 

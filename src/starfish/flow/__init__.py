@@ -5,9 +5,10 @@ import sys
 from prefect import flow, get_run_logger
 
 from src.dataframe.task import deduplicate, filter_rows, keep_columns, rename_columns, sort_rows, write_csv_textfile
-from src.powercampus.flow import academic_table, building_table, code_day_table, sectionper_table, sections_table, \
-    sectionschedule_table, testscores_table, transcriptdetail_table, transcriptgpa_table
-from src.powercampus.task import apply_active_with_email_address, current_yearterm, latest_year_term
+from src.powercampus.flow import academic_table, building_table, code_day_table, sectionper_table, \
+     sections_table, sectionschedule_table, testscores_table, transcriptdetail_table, transcriptgpa_table, \
+     apply_active_with_email_address
+from src.powercampus.task import current_yearterm, latest_year_term
 from src.starfish import BEGIN_YEAR, CATALOG_YEAR, N_YEARS_ACTIVE_WINDOW, starfish_workingfiles_path, starfish_prod_sisdatafiles_path
 from src.starfish.task import copy_to_starfish_sisdatafiles
 
