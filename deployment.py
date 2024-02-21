@@ -30,76 +30,86 @@ process_infrastructure.save(
 canvas_data_deployment = Deployment.build_from_flow(
     flow=canvas_data_flow,
     name="canvas-data-deployment",
+    tags=['canvas', 'canvas_data'],
     parameters={},
     infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
+    pause_on_shutdown=False,
     work_queue_name="production",
     # skip_upload=True,
-    storage=local_storage,
-    schedule=(RRuleSchedule(rrule="DTSTART:20221220T041500\nFREQ=HOURLY;INTERVAL=8", timezone="America/New_York")
+    # storage=local_storage,
+    schedule=(RRuleSchedule(rrule="DTSTART:20240221T041500\nFREQ=HOURLY;INTERVAL=8", timezone="America/New_York")
         ),
 )
 
 canvas_hourly_deployment = Deployment.build_from_flow(
     flow=canvas_hourly_flow,
     name="canvas-hourly-deployment",
+    tags=['canvas', 'canvas_hourly'],
     parameters={},
     infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
+    pause_on_shutdown=False,
     work_queue_name="production",
     # skip_upload=True,
-    storage=local_storage,
-    schedule=(RRuleSchedule(rrule="DTSTART:20221220T043000\nFREQ=HOURLY;INTERVAL=1", timezone="America/New_York")
+    # storage=local_storage,
+    schedule=(RRuleSchedule(rrule="DTSTART:20240221T043000\nFREQ=HOURLY;INTERVAL=1", timezone="America/New_York")
         ),
 )
 
 exporter_deployment = Deployment.build_from_flow(
     flow=exporter_flow,
     name="exporter-deployment",
+    tags=['exporter', 'starfish'],
     parameters={},
     infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
+    pause_on_shutdown=False,
     work_queue_name="production",
     skip_upload=True,
-    storage=local_storage,
-    schedule=(RRuleSchedule(rrule="DTSTART:20221120T041500\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
+    # storage=local_storage,
+    schedule=(RRuleSchedule(rrule="DTSTART:20240221T041500\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
         ),
 )
 
 registrar_deployment = Deployment.build_from_flow(
     flow=registrar_flow,
     name="registrar-deployment",
+    tags=['registrar'],
     parameters={},
     infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
+    pause_on_shutdown=False,
     work_queue_name="production",
     skip_upload=True,
-    storage=local_storage,
-    schedule=(RRuleSchedule(rrule="DTSTART:20221109T170000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
+    # storage=local_storage,
+    schedule=(RRuleSchedule(rrule="DTSTART:20240221T170000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
         ),
 )
 
 starfish_deployment = Deployment.build_from_flow(
     flow=starfish_flow,
     name="starfish-deployment",
+    tags=['starfish'],
     parameters={"academic_year": "2024",
                 "academic_term": "SPRING"},
     infrastructure=process_infrastructure,
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
+    pause_on_shutdown=False,
     work_queue_name="production",
     skip_upload=True,
-    storage=local_storage,
-    schedule=(RRuleSchedule(rrule="DTSTART:20221109T193000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
+    # storage=local_storage,
+    schedule=(RRuleSchedule(rrule="DTSTART:20240221T193000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
         ),
 )
 

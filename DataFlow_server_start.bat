@@ -14,7 +14,7 @@ echo "cd F:\Applications\psc-dataflow" 1>> F:\Applications\psc-dataflow\logs\ser
 echo "Set environment variables" 1>> F:\Applications\psc-dataflow\logs\server_out.log 2>&1
 set "PREFECT_HOME=F:\Applications\psc-dataflow\data\.prefect"
 
-call C:\ProgramData\Anaconda3\condabin\activate.bat py311prefect 1>> F:\Applications\psc-dataflow\logs\server_out.log 2>&1
+call C:\ProgramData\Anaconda3\condabin\activate.bat F:\Applications\psc-dataflow\envs\py311prefect 1>> F:\Applications\psc-dataflow\logs\server_out.log 2>&1
 echo "call activate" 1>> F:\Applications\psc-dataflow\logs\server_out.log 2>&1
 call conda list 1>> F:\Applications\psc-dataflow\logs\server_out.log 2>&1
 
