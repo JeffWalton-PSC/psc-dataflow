@@ -36,9 +36,9 @@ canvas_data_deployment = Deployment.build_from_flow(
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
-    pause_on_shutdown=False,
     work_queue_name="production",
-    # skip_upload=True,
+    work_pool_name="psc-data-pool",
+    skip_upload=True,
     # storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20240221T041500\nFREQ=HOURLY;INTERVAL=8", timezone="America/New_York")
         ),
@@ -53,9 +53,9 @@ canvas_hourly_deployment = Deployment.build_from_flow(
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
-    pause_on_shutdown=False,
     work_queue_name="production",
-    # skip_upload=True,
+    work_pool_name="psc-data-pool",
+    skip_upload=True,
     # storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20240221T043000\nFREQ=HOURLY;INTERVAL=1", timezone="America/New_York")
         ),
@@ -70,8 +70,8 @@ exporter_deployment = Deployment.build_from_flow(
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
-    pause_on_shutdown=False,
     work_queue_name="production",
+    work_pool_name="psc-data-pool",
     skip_upload=True,
     # storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20240221T041500\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
@@ -87,8 +87,8 @@ registrar_deployment = Deployment.build_from_flow(
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
-    pause_on_shutdown=False,
     work_queue_name="production",
+    work_pool_name="psc-data-pool",
     skip_upload=True,
     # storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20240221T170000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")
@@ -105,8 +105,8 @@ starfish_deployment = Deployment.build_from_flow(
     infra_overrides={
         "env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}
         },
-    pause_on_shutdown=False,
     work_queue_name="production",
+    work_pool_name="psc-data-pool",
     skip_upload=True,
     # storage=local_storage,
     schedule=(RRuleSchedule(rrule="DTSTART:20240221T193000\nFREQ=DAILY;INTERVAL=1", timezone="America/New_York")

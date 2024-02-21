@@ -8,7 +8,7 @@ from src.dataframe.task import deduplicate, filter_rows, keep_columns, rename_co
 from src.powercampus.flow import academic_table, building_table, code_day_table, sectionper_table, \
      sections_table, sectionschedule_table, testscores_table, transcriptdetail_table, transcriptgpa_table, \
      apply_active_with_email_address
-from src.powercampus.task import current_yearterm, latest_year_term
+from src.powercampus.task import latest_year_term
 from src.starfish import BEGIN_YEAR, CATALOG_YEAR, N_YEARS_ACTIVE_WINDOW, starfish_workingfiles_path, starfish_prod_sisdatafiles_path
 from src.starfish.task import copy_to_starfish_sisdatafiles
 

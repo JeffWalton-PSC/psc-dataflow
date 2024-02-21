@@ -14,12 +14,12 @@ echo "cd F:\Applications\psc-dataflow" 1>> F:\Applications\psc-dataflow\logs\age
 echo "Set environment variables" 1>> F:\Applications\psc-dataflow\logs\agent_out.log 2>&1
 set "PREFECT_HOME=F:\Applications\psc-dataflow\data\.prefect"
 
-call C:\ProgramData\Anaconda3\condabin\activate.bat py311prefect 1>> F:\Applications\psc-dataflow\logs\agent_out.log 2>&1
+call C:\ProgramData\Anaconda3\condabin\activate.bat F:\Applications\psc-dataflow\envs\py311prefect 1>> F:\Applications\psc-dataflow\logs\agent_out.log 2>&1
 echo "call activate" 1>> F:\Applications\psc-dataflow\logs\agent_out.log 2>&1
 rem call conda list 1>> F:\Applications\psc-dataflow\logs\agent_out.log 2>&1
 
 echo "prefect agent start " >> F:\Applications\psc-dataflow\logs\agent_out.log
-prefect agent start -q production 1>> F:\Applications\psc-dataflow\logs\agent_out.log 2>&1
+prefect agent start --pool "default-agent-pool" --work-queue "production" 1>> F:\Applications\psc-dataflow\logs\agent_out.log 2>&1
 
 rem pause
 time /T >> F:\Applications\psc-dataflow\logs\agent_out.log
