@@ -1,0 +1,93 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: psc-dataflow
+prefect-version: 2.15.0
+
+# build section allows you to manage and build docker images
+build:
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push:
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+- prefect.deployments.steps.set_working_directory:
+    directory: F:\Applications\psc-dataflow
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: canvas_hourly_deployment
+  version:
+  tags: [canvas, hourly]
+  description: Main Canvas flow.  Runs all Canvas data feed flows hourly.
+  entrypoint: src\canvas\flow\__init__.py:canvas_hourly_flow
+  parameters: {}
+  work_pool:
+    name: psc-data-pool
+    work_queue_name: production
+    job_variables: {}
+  schedule:
+    rrule: DTSTART:20240222T043000\nFREQ=HOURLY;INTERVAL=1
+    timezone: EST
+    active: true
+- name: canvas_data_deployment
+  version:
+  tags: [canvas, canvas_data]
+  description: "Runs all Canvas Data flows.\nDownloads recent Canvas Data.\nCreates
+    Student last activity spreadsheet."
+  entrypoint: src\canvas\flow\__init__.py:canvas_data_flow
+  parameters: {}
+  work_pool:
+    name: psc-data-pool
+    work_queue_name: production
+    job_variables: {}
+  schedule:
+    rrule: FREQ=HOURLY;INTERVAL=8
+    timezone: EST
+    active: true
+- name: exporter_deployment
+  version:
+  tags: [exporter]
+  description: Processes Exporter files after they are retreived by the Starfish Exporter
+    data pump.
+  entrypoint: src\starfish\exporter.py:exporter_flow
+  parameters: {}
+  work_pool:
+    name: psc-data-pool
+    work_queue_name: production
+    job_variables: {}
+  schedule:
+    rrule: FREQ=DAILY;INTERVAL=1
+    timezone: EST
+    active: true
+- name: registrar_deployment
+  version:
+  tags: [registrar]
+  description: Primary flow that runs all Registrar flows.
+  entrypoint: src\registrar\flow\__init__.py:registrar_flow
+  parameters: {}
+  work_pool:
+    name: psc-data-pool
+    work_queue_name: production
+    job_variables: {}
+  schedule:
+    rrule: FREQ=DAILY;INTERVAL=1
+    timezone: EST
+    active: true
+- name: starfish_deployment
+  version:
+  tags: ['starfish']
+  description:
+  entrypoint: src\starfish\flow\__init__.py:starfish_flow
+  parameters: {}
+  work_pool:
+    name: psc-data-pool
+    work_queue_name: production
+    job_variables: {}
+  schedule:
+    rrule: FREQ=DAILY;INTERVAL=1
+    timezone: EST
+    active: true

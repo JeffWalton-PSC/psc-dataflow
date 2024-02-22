@@ -20,7 +20,7 @@ local_storage.save(
 
 process_infrastructure = Process(
     # working_dir="F:\Applications\psc-dataflow\data\work"
-    working_dir="F:\Applications\psc-dataflow_work"
+    working_dir="F:\Applications\psc-dataflow"
     )
 process_infrastructure.save(
     "psc-dataflow-process-infrastructure", 
