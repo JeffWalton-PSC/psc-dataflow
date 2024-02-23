@@ -1,7 +1,7 @@
 import datetime as dt
 import pandas as pd
 from prefect import flow, get_run_logger
-from src.powercampus import FLOW_RDS, FLOW_RETRIES, table_fields
+from src.powercampus import START_ACADEMIC_YEAR, FLOW_RDS, FLOW_RETRIES, table_fields
 from src.powercampus.task import select
 
 

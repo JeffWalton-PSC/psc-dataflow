@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import timedelta
 from prefect import task, get_run_logger
 from prefect.tasks import task_input_hash
-from src.powercampus import START_ACADEMIC_YEAR, TASK_CEM, TASK_RETRIES, TASK_RDS
+from src.powercampus import TASK_CEM, TASK_RETRIES, TASK_RDS
 import local_db
 
 
