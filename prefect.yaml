@@ -45,7 +45,7 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: FREQ=HOURLY;INTERVAL=8
+    rrule: DTSTART:20240221T041500\nFREQ=HOURLY;INTERVAL=8
     timezone: EST
     active: true
 - name: exporter_deployment
@@ -60,7 +60,7 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: FREQ=DAILY;INTERVAL=1
+    rrule: 20240221T041500\nFREQ=DAILY;INTERVAL=1
     timezone: EST
     active: true
 - name: registrar_deployment
@@ -74,7 +74,7 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: FREQ=DAILY;INTERVAL=1
+    rrule: 20240221T170000\nFREQ=DAILY;INTERVAL=1
     timezone: EST
     active: true
 - name: starfish_deployment
@@ -88,6 +88,6 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: FREQ=DAILY;INTERVAL=1
+    rrule: 20240221T193000\nFREQ=DAILY;INTERVAL=1
     timezone: EST
     active: true
