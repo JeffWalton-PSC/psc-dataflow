@@ -2,7 +2,7 @@ import datetime as dt
 import pandas as pd
 from prefect import flow, get_run_logger
 from src.powercampus import FLOW_RDS, FLOW_RETRIES, table_fields
-from src.powercampus.task import select, current_yearterm_df
+from src.powercampus.task import select
 
 
 @flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
@@ -269,4 +269,66 @@ def current_yearterm() -> tuple[str, str, pd.Timestamp, pd.Timestamp, str, str]:
     df = current_yearterm_df()
     return (df['year'].iloc[0], df['term'].iloc[0], df['start_of_term'].iloc[0], 
         df['end_of_term'].iloc[0], df['yearterm_sort'].iloc[0], df['yearterm'].iloc[0])
+
+
+@flow(retries=FLOW_RETRIES, retry_delay_seconds=FLOW_RDS)
+def current_yearterm_df() -> pd.DataFrame:
+    """
+    Function returns current year/term information based on today's date.
+
+    Returns dataframe containing:
+        term - string,
+        year - string,
+        yearterm - string,
+        start_of_term - datetime,
+        end_of_term - datetime,
+        yearterm_sort - string
+    """
+
+    logger = get_run_logger()
+    logger.debug(f"current_yearterm_df()")
+
+    df_cal = ( select("ACADEMICCALENDAR", 
+                    fields=['ACADEMIC_YEAR', 'ACADEMIC_TERM', 'ACADEMIC_SESSION', 
+                            'START_DATE', 'END_DATE', 'FINAL_END_DATE'
+                            ], 
+                    where=f"ACADEMIC_YEAR>='{START_ACADEMIC_YEAR}' AND ACADEMIC_TERM IN ('FALL', 'SPRING', 'SUMMER')", 
+                    distinct=True
+                    )
+              .groupby(['ACADEMIC_YEAR', 'ACADEMIC_TERM']).agg(
+                  {'START_DATE': ['min'],
+                   'END_DATE': ['max'],
+                   'FINAL_END_DATE': ['max']
+                  }
+              ).reset_index()
+             )
+    df_cal.columns = df_cal.columns.droplevel(1)
+    
+    yearterm_sort = ( lambda r:
+        r['ACADEMIC_YEAR'] + '01' if r['ACADEMIC_TERM']=='SPRING' else
+        (r['ACADEMIC_YEAR'] + '02' if r['ACADEMIC_TERM']=='SUMMER' else
+        (r['ACADEMIC_YEAR'] + '03' if r['ACADEMIC_TERM']=='FALL' else
+        r['ACADEMIC_YEAR'] + '00'))
+    )
+    df_cal['yearterm_sort'] = df_cal.apply(yearterm_sort, axis=1)
+
+    df_cal['yearterm'] = df_cal['ACADEMIC_YEAR'] + '.' +  df_cal['ACADEMIC_TERM'].str.title()
+
+    df_cal = ( 
+        df_cal.drop(
+            columns=[
+                'END_DATE'
+                ]
+            )
+        .rename(
+            columns={
+                'ACADEMIC_YEAR': 'year', 
+                'ACADEMIC_TERM': 'term', 
+                'START_DATE': 'start_of_term', 
+                'FINAL_END_DATE': 'end_of_term', 
+                }
+            )
+        )
+
+    return df_cal.loc[(df_cal['end_of_term'] >= dt.datetime.today())].sort_values(['end_of_term']).iloc[[0]]
 

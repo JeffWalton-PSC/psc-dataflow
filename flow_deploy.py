@@ -4,9 +4,9 @@ from src.canvas.flow import canvas_data_flow, canvas_hourly_flow
 from src.registrar.flow import registrar_flow
 from src.starfish.exporter import exporter_flow
 from src.starfish.flow import starfish_flow
-from prefect import serve
-from prefect.filesystems import LocalFileSystem
-from prefect.infrastructure import Process
+from prefect import serve, deploy
+# from prefect.filesystems import LocalFileSystem
+# from prefect.infrastructure import Process
 
 
 canvas_data_deployment = canvas_data_flow.to_deployment(

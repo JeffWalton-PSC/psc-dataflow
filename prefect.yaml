@@ -30,7 +30,8 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: DTSTART:20240222T043000\nFREQ=HOURLY;INTERVAL=1
+    interval: 3600.0
+    anchor_date: '2024-02-23T04:30:00.000000+00:00'
     timezone: EST
     active: true
 - name: canvas_data_deployment
@@ -45,7 +46,8 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: DTSTART:20240221T041500\nFREQ=HOURLY;INTERVAL=8
+    interval: 28800.0
+    anchor_date: '2024-02-23T04:15:00.000000+00:00'
     timezone: EST
     active: true
 - name: exporter_deployment
@@ -60,7 +62,8 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: 20240221T041500\nFREQ=DAILY;INTERVAL=1
+    interval: 86400.0
+    anchor_date: '2024-02-23T04:45:00.000000+00:00'
     timezone: EST
     active: true
 - name: registrar_deployment
@@ -74,20 +77,22 @@ deployments:
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: 20240221T170000\nFREQ=DAILY;INTERVAL=1
+    interval: 86400.0
+    anchor_date: '2024-02-23T17:00:00.000000+00:00'
     timezone: EST
     active: true
 - name: starfish_deployment
   version:
-  tags: ['starfish']
+  tags: [starfish]
   description:
   entrypoint: src\starfish\flow\__init__.py:starfish_flow
-  parameters: {}
+  parameters: {academic_year: '2024', academic_term: SPRING}
   work_pool:
     name: psc-data-pool
     work_queue_name: production
     job_variables: {}
   schedule:
-    rrule: 20240221T193000\nFREQ=DAILY;INTERVAL=1
+    interval: 86400.0
+    anchor_date: '2024-02-23T19:35:00.000000+00:00'
     timezone: EST
     active: true
