@@ -15,7 +15,7 @@ canvas_data_deployment = canvas_data_flow.to_deployment(
     parameters={},
     work_queue_name="production",
     work_pool_name="psc-data-pool",
-    rrule="DTSTART:20240222T041500\nFREQ=HOURLY;INTERVAL=8",
+    rrule="DTSTART:20240411T041500\nFREQ=HOURLY;INTERVAL=8",
     # timezone="America/New_York",
 )
 
@@ -25,7 +25,7 @@ canvas_hourly_deployment = canvas_hourly_flow.to_deployment(
     parameters={},
     work_queue_name="production",
     work_pool_name="psc-data-pool",
-    rrule="DTSTART:20240222T043000\nFREQ=HOURLY;INTERVAL=1", 
+    rrule="DTSTART:20240411T043000\nFREQ=HOURLY;INTERVAL=1", 
     # timezone="America/New_York",
 )
 
@@ -35,7 +35,7 @@ exporter_deployment = exporter_flow.to_deployment(
     parameters={},
     work_queue_name="production",
     work_pool_name="psc-data-pool",
-    rrule="DTSTART:20240222T041500\nFREQ=DAILY;INTERVAL=1", 
+    rrule="DTSTART:20240411T041500\nFREQ=DAILY;INTERVAL=1", 
     # timezone="America/New_York",
 )
 
@@ -45,7 +45,7 @@ registrar_deployment = registrar_flow.to_deployment(
     parameters={},
     work_queue_name="production",
     work_pool_name="psc-data-pool",
-    rrule="DTSTART:20240222T170000\nFREQ=DAILY;INTERVAL=1", 
+    rrule="DTSTART:20240411T170000\nFREQ=DAILY;INTERVAL=1", 
     # timezone="America/New_York",
 )
 
@@ -56,7 +56,7 @@ starfish_deployment = starfish_flow.to_deployment(
                 "academic_term": "SPRING"},
     work_queue_name="production",
     work_pool_name="psc-data-pool",
-    rrule="DTSTART:20240222T193000\nFREQ=DAILY;INTERVAL=1", 
+    rrule="DTSTART:20240411T193000\nFREQ=DAILY;INTERVAL=1", 
     # timezone="America/New_York",
 )
 
