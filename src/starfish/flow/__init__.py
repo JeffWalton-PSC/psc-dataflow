@@ -123,8 +123,8 @@ def gened_student_prereq_groups(begin_year: str, catalog_year: str):
     gen_ed_codes = ['WC-F','QP-F','AR-F','RE-F','SC-F','WC-R','QP-R','AR-R','RE-R','SC-R','WC-I','QP-I','AR-I','RE-I','SC-I']
 
     #readd in the gened courses for special topics
-    st_399_gened_courses_fn = starfish_workingfiles_path / "student_prereq_groups\ST_GENED_COURSES.csv"
-    st_399_gened_courses = pd.read_csv(st_399_gened_courses_fn)
+    st_gened_courses_fn = starfish_workingfiles_path / "student_prereq_groups\ST_GENED_COURSES.csv"
+    st_gened_courses = pd.read_csv(st_gened_courses_fn)
 
     sections_fn = starfish_prod_sisdatafiles_path / "sections.txt"
     sections_df = pd.read_csv(sections_fn)
@@ -133,56 +133,56 @@ def gened_student_prereq_groups(begin_year: str, catalog_year: str):
     outcomes_fn = starfish_prod_sisdatafiles_path / "course_outcomes.txt"
     outcomes_df = pd.read_csv(outcomes_fn)
 
+    outcomes_section_df = pd.merge(outcomes_df, sections_df, left_on='course_section_integration_id', right_on='course_section_id', how='left')
+    outcomes_section_df = outcomes_section_df[['user_integration_id','course_section_integration_id','final_grade','course_integration_id']]
+
     req_course_sets_fn = starfish_prod_sisdatafiles_path / f"{catalog_year}_requirement_course_sets.txt"
     req_course_sets_df = pd.read_csv(req_course_sets_fn)
 
-    outcomes_section_pd = pd.merge(outcomes_df, sections_df, left_on='course_section_integration_id', right_on='course_section_id', how='left')
-    outcomes_section_pd = outcomes_section_pd[['user_integration_id','course_section_integration_id','final_grade','course_integration_id']]
-
-    student_tranfer_records_fn = starfish_prod_sisdatafiles_path / "student_transfer_records.txt"
-    student_tranfer_records_df = pd.read_csv(student_tranfer_records_fn)
+    student_transfer_records_fn = starfish_prod_sisdatafiles_path / "student_transfer_records.txt"
+    student_transfer_records_df = pd.read_csv(student_transfer_records_fn)
 
     course_catalog_fn = starfish_prod_sisdatafiles_path / "course_catalog.txt"
     course_catalog_df = pd.read_csv(course_catalog_fn)
 
-    student_tranfer_df = pd.merge(student_tranfer_records_df, 
+    student_transfer_df = pd.merge(student_transfer_records_df, 
                                 course_catalog_df, 
                                 left_on='transfer_course_number', 
                                 right_on='course_id', 
                                 how='left')
-    student_tranfer_df = student_tranfer_df.rename(columns={"student_integration_id": "user_integration_id",
+    student_transfer_df = student_transfer_df.rename(columns={"student_integration_id": "user_integration_id",
                                                             "transfer_course_section_number": "course_section_integration_id",
                                                             "ag_grade": "final_grade",
                                                             "integration_id": "course_integration_id",
                                                         }
                                                 )
-    student_tranfer_df = student_tranfer_df[['user_integration_id', 
-                                            'transfer_course_number', 
-                                            'course_id', 
-                                            'course_section_integration_id', 
-                                            'final_grade', 
-                                            'course_integration_id']]
-    student_tranfer_df = student_tranfer_df[['user_integration_id', 
+    # student_transfer_df = student_transfer_df[['user_integration_id', 
+    #                                         'transfer_course_number', 
+    #                                         'course_id', 
+    #                                         'course_section_integration_id', 
+    #                                         'final_grade', 
+    #                                         'course_integration_id']]
+    student_transfer_df = student_transfer_df[['user_integration_id', 
                                             'course_section_integration_id', 
                                             'final_grade', 
                                             'course_integration_id']]
 
-    outcomes_section_pd = pd.concat([outcomes_section_pd, student_tranfer_df], ignore_index=True, sort=True)
+    outcomes_section_df = pd.concat([outcomes_section_df, student_transfer_df], ignore_index=True, sort=True)
 
-    outcomes_sections_sets_pd = pd.merge(outcomes_section_pd, req_course_sets_df, on='course_integration_id', how='inner')
+    outcomes_sections_sets_pd = pd.merge(outcomes_section_df, req_course_sets_df, on='course_integration_id', how='inner')
     outcomes_sections_sets_pd = outcomes_sections_sets_pd[['user_integration_id','set_abbreviation','final_grade']]
 
     #only keep passing grades and gened codes
     result_pd = outcomes_sections_sets_pd.query("final_grade in @passing_grades").query("set_abbreviation in @gen_ed_codes")
 
-    #takes the 399 special topics courses and prepared to merge them with the outcomes file
-    outcomes_sections_sets_pd_399 = pd.merge(outcomes_section_pd, st_399_gened_courses, on='course_section_integration_id', how='inner')
+    #takes the st special topics courses and prepared to merge them with the outcomes file
+    outcomes_sections_sets_pd_st = pd.merge(outcomes_section_df, st_gened_courses, on='course_section_integration_id', how='inner')
 
-    #in 399 dataframe, only keep passing grades and gened codes
-    result_pd_399 = outcomes_sections_sets_pd_399.query("final_grade in @passing_grades").query("set_abbreviation in @gen_ed_codes")
+    #in st dataframe, only keep passing grades and gened codes
+    result_pd_st = outcomes_sections_sets_pd_st.query("final_grade in @passing_grades").query("set_abbreviation in @gen_ed_codes")
 
-    #append the 399 and standard data frames
-    result_pd = pd.concat([result_pd, result_pd_399], ignore_index=True, sort=True)
+    #append the st and standard data frames
+    result_pd = pd.concat([result_pd, result_pd_st], ignore_index=True, sort=True)
 
     #remove the grade and ID column
     result_pd = result_pd[['user_integration_id','set_abbreviation']]
@@ -686,12 +686,12 @@ def starfish_flow(academic_year: str, academic_term: str):
     logger = get_run_logger()
     logger.info(f"Start: starfish_flow({academic_year=}, {academic_term=})")
 
-    requirement_course_sets(CATALOG_YEAR)
-    teaching(BEGIN_YEAR)
-    student_test_results()
-    student_transfer_records()
-    section_schedules(BEGIN_YEAR)
-    student_prereq_groups(BEGIN_YEAR, CATALOG_YEAR)
+    # requirement_course_sets(CATALOG_YEAR)
+    # teaching(BEGIN_YEAR)
+    # student_test_results()
+    # student_transfer_records()
+    # section_schedules(BEGIN_YEAR)
+    # student_prereq_groups(BEGIN_YEAR, CATALOG_YEAR)
 
     logger.info(f"End: starfish_flow()")
 

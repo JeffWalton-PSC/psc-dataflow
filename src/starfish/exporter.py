@@ -44,7 +44,7 @@ def exporter_flow():
     logger = get_run_logger()
     logger.info(f"Start: exporter_flow()")
 
-    combine_exporter_files()
+    # combine_exporter_files()
 
     logger.info(f"End: exporter_flow()")
 
